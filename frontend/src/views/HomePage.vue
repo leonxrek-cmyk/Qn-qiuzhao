@@ -81,7 +81,7 @@
 
 <script>
 import CharacterCard from '../components/CharacterCard.vue'
-import charactersData from '../../../common/characters.json'
+import apiService from '../apiService'
 
 export default {
   name: 'HomePage',
@@ -93,9 +93,14 @@ export default {
       popularCharacters: []
     }
   },
-  mounted() {
-    // 加载热门角色（这里取前4个作为示例）
-    this.popularCharacters = charactersData.slice(0, 4)
+  async mounted() {
+    try {
+      // 加载热门角色（使用apiService获取角色数据，并取前4个作为热门角色）
+      const configs = await apiService.getCharacterConfigs()
+      this.popularCharacters = configs.slice(0, 4)
+    } catch (error) {
+      console.error('加载热门角色失败:', error)
+    }
   },
   methods: {
     selectCharacter(character) {

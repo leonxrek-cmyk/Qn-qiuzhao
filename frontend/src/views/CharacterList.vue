@@ -56,7 +56,7 @@
 
 <script>
 import CharacterCard from '../components/CharacterCard.vue'
-import charactersData from '../../../common/characters.json'
+import apiService from '../apiService'
 
 export default {
   name: 'CharacterList',
@@ -68,7 +68,8 @@ export default {
       characters: [],
       searchQuery: '',
       selectedTags: [],
-      allTags: new Set()
+      allTags: [],
+      loading: true
     }
   },
   computed: {
@@ -101,21 +102,93 @@ export default {
     }
   },
   mounted() {
-    // 加载角色数据
-    this.characters = charactersData
-    
-    // 收集所有标签
-    this.collectAllTags()
+    // 从API加载角色配置数据
+    this.loadCharacters()
   },
   methods: {
+    // 从API加载角色数据
+    async loadCharacters() {
+      this.loading = true
+      try {
+        const configs = await apiService.getCharacterConfigs()
+        // 提取所需的基本信息，保持向后兼容
+        this.characters = configs.map(config => ({
+          id: config.id,
+          name: config.name,
+          description: config.description,
+          tags: config.tags,
+          avatar: config.avatar
+        }))
+        // 收集所有标签
+        this.collectAllTags()
+      } catch (error) {
+        console.error('加载角色配置失败:', error)
+        // 出错时使用备用数据
+        this.characters = this.getFallbackCharacters()
+        this.collectAllTags()
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    // 备用角色数据（当API调用失败时使用）
+    getFallbackCharacters() {
+      return [
+        {
+          id: 'harry-potter',
+          name: '哈利·波特',
+          description: '霍格沃茨魔法学校的学生，勇敢善良',
+          tags: ['文学', '奇幻', '魔法'],
+          avatar: '/harry-potter.png'
+        },
+        {
+          id: 'socrates',
+          name: '苏格拉底',
+          description: '古希腊哲学家，西方哲学的奠基人之一',
+          tags: ['哲学', '历史', '教育'],
+          avatar: '/socrates.png'
+        },
+        {
+          id: 'marie-curie',
+          name: '玛丽·居里',
+          description: '物理学家和化学家，首位获得两次诺贝尔奖的人',
+          tags: ['科学', '历史', '教育'],
+          avatar: '/marie-curie.png'
+        },
+        {
+          id: 'albert-einstein',
+          name: '阿尔伯特·爱因斯坦',
+          description: '理论物理学家，相对论的创立者',
+          tags: ['科学', '历史', '教育'],
+          avatar: '/albert-einstein.png'
+        },
+        {
+          id: 'leonardo-da-vinci',
+          name: '列奥纳多·达·芬奇',
+          description: '意大利文艺复兴时期的艺术家、科学家和发明家',
+          tags: ['艺术', '科学', '历史'],
+          avatar: '/leonardo-da-vinci.png'
+        },
+        {
+          id: 'shakespeare',
+          name: '威廉·莎士比亚',
+          description: '英国文学史上最杰出的戏剧家和诗人',
+          tags: ['文学', '艺术', '历史'],
+          avatar: '/shakespeare.png'
+        }
+      ]
+    },
+    
     // 收集所有角色的标签
     collectAllTags() {
       this.characters.forEach(character => {
         character.tags.forEach(tag => {
-          this.allTags.add(tag)
+          if (!this.allTags.includes(tag)) {
+            this.allTags.push(tag)
+          }
         })
       })
-      this.allTags = Array.from(this.allTags).sort()
+      this.allTags.sort()
     },
     
     // 处理搜索

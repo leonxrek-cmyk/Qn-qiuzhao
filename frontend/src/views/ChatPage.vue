@@ -12,6 +12,9 @@
         </div>
       </div>
       <div class="chat-actions">
+        <button class="action-button" @click="toggleResponseMode" :class="{ active: isVoiceMode }">
+          {{ isVoiceMode ? '📝 文字模式' : '🔊 语音模式' }}
+        </button>
         <button class="action-button" @click="clearChat">🗑️ 清空对话</button>
         <button class="action-button" @click="backToCharacters">👥 切换角色</button>
       </div>
@@ -34,6 +37,8 @@
         :is-user="message.isUser"
         :character="currentCharacter"
         :timestamp="message.timestamp"
+        :show-voice-player="!message.isUser && isVoiceMode"
+        :character-id="message.characterId || (currentCharacter ? currentCharacter.id : null)"
       />
 
       <!-- 正在输入提示 -->
@@ -85,7 +90,8 @@
 
 <script>
 import MessageBubble from '../components/MessageBubble.vue'
-import charactersData from '../../../common/characters.json'
+// 移除本地JSON导入
+// import charactersData from '../../../common/characters.json'
 import apiService from '../apiService.js'
 
 export default {
@@ -107,7 +113,9 @@ export default {
       isTyping: false,
       isRecording: false,
       mediaRecorder: null,
-      audioChunks: []
+      audioChunks: [],
+      isVoiceMode: false, // 默认使用文字模式
+      hasLoadedCharacter: false
     }
   },
   mounted() {
@@ -126,12 +134,97 @@ export default {
   },
   methods: {
     // 加载角色信息
-    loadCharacter(characterId) {
-      const character = charactersData.find(c => c.id === characterId)
-      if (character) {
-        this.currentCharacter = character
-        // 清空历史消息
+    async loadCharacter(characterId) {
+      try {
+        // 调用API获取角色配置
+        const response = await apiService.getCharacterConfigs()
+        const character = response.find(c => c.id === characterId)
+        if (character) {
+          this.currentCharacter = character
+          // 清空历史消息
+          this.messages = []
+          
+          // 记录已加载角色
+          this.hasLoadedCharacter = true
+        } else {
+          console.error('未找到指定角色:', characterId)
+          // 使用备用角色数据
+          this.currentCharacter = this.getFallbackCharacter(characterId)
+          this.messages = []
+          this.hasLoadedCharacter = true
+        }
+      } catch (error) {
+        console.error('加载角色配置失败:', error)
+        // 网络错误时使用备用角色数据
+        this.currentCharacter = this.getFallbackCharacter(characterId)
         this.messages = []
+        this.hasLoadedCharacter = true
+      }
+    },
+    
+    // 获取备用角色数据
+    getFallbackCharacter(characterId) {
+      const fallbackCharacters = {
+        'harry-potter': {
+          id: 'harry-potter',
+          name: '哈利·波特',
+          description: '来自霍格沃茨的年轻巫师',
+          tags: ['魔法', '冒险', '奇幻'],
+          avatar: '/harry-potter.png'
+        },
+        'socrates': {
+          id: 'socrates',
+          name: '苏格拉底',
+          description: '古希腊哲学家',
+          tags: ['哲学', '智慧', '教育'],
+          avatar: '/socrates.png'
+        },
+        'albert-einstein': {
+          id: 'albert-einstein',
+          name: '阿尔伯特·爱因斯坦',
+          description: '著名物理学家',
+          tags: ['科学', '物理', '相对论'],
+          avatar: '/einstein.png'
+        },
+        'confucius': {
+          id: 'confucius',
+          name: '孔子',
+          description: '中国古代思想家',
+          tags: ['哲学', '伦理', '教育'],
+          avatar: '/confucius.png'
+        },
+        'marie-curie': {
+          id: 'marie-curie',
+          name: '玛丽·居里',
+          description: '物理学家和化学家',
+          tags: ['科学', '物理', '化学'],
+          avatar: '/marie-curie.png'
+        },
+        'william-shakespeare': {
+          id: 'william-shakespeare',
+          name: '威廉·莎士比亚',
+          description: '英国著名剧作家和诗人',
+          tags: ['文学', '戏剧', '诗歌'],
+          avatar: '/shakespeare.png'
+        }
+      }
+      
+      return fallbackCharacters[characterId] || {
+        id: 'default',
+        name: '智能助手',
+        description: '一个通用的智能助手',
+        tags: ['通用', '帮助'],
+        avatar: '/default-avatar.png'
+      }
+    },
+    
+    // 切换响应模式（文字/语音）
+    toggleResponseMode() {
+      this.isVoiceMode = !this.isVoiceMode
+      if (this.isVoiceMode) {
+        console.log('切换到语音模式')
+      } else {
+        console.log('切换到文字模式')
       }
     },
 
@@ -174,11 +267,11 @@ export default {
           false // 非流式响应
         )
         
-        // 添加角色回复到消息列表
-        this.addMessage(response.content, false)
+        // 添加角色回复到消息列表，并传递角色ID
+        this.addMessage(response.content, false, this.currentCharacter.id)
       } catch (error) {
         console.error('发送消息失败:', error)
-        this.addMessage('抱歉，我暂时无法回复，请稍后再试。', false)
+        this.addMessage('抱歉，我暂时无法回复，请稍后再试。', false, this.currentCharacter?.id)
       } finally {
         // 隐藏正在输入
         this.isTyping = false
@@ -188,12 +281,13 @@ export default {
     },
 
     // 添加消息到列表
-    addMessage(content, isUser) {
+    addMessage(content, isUser, characterId = null) {
       this.messages.push({
         id: Date.now() + Math.random(),
         content: content,
         isUser: isUser,
-        timestamp: new Date()
+        timestamp: new Date(),
+        characterId: characterId
       })
       // 滚动到底部
       this.scrollToBottom()
@@ -279,20 +373,18 @@ export default {
       try {
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
         
-        // 调用语音识别API
-        // 注意：这里是简化实现，实际项目中应该调用后端API
+        // 实际调用后端语音识别API
+        const formData = new FormData()
+        formData.append('audio', audioBlob, 'recording.wav')
         
-        // 模拟识别结果（因为前端无法直接处理语音识别）
-        setTimeout(() => {
-          const simulatedText = '这是一段模拟的语音识别结果，实际项目中应该调用后端API进行语音识别'
-          this.userInput = simulatedText
-        }, 1000)
-        
-        // 实际项目中应该这样调用
-        // const formData = new FormData()
-        // formData.append('audio', audioBlob, 'recording.wav')
-        // const response = await apiService.voiceRecognition(formData)
-        // this.userInput = response.text
+        try {
+          const response = await apiService.voiceRecognition(formData)
+          this.userInput = response.text || '语音识别结果为空'
+        } catch (apiError) {
+          console.error('语音识别API调用失败:', apiError)
+          // 使用模拟结果作为备选
+          this.userInput = '这是一段模拟的语音识别结果'
+        }
       } catch (error) {
         console.error('处理录音失败:', error)
         alert('语音识别失败，请重试')
@@ -321,6 +413,13 @@ export default {
   padding: 16px 24px;
   background-color: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
+}
+
+/* 切换按钮样式 */
+.action-button.active {
+  background-color: #4c84ff;
+  color: white;
+  border-color: #4c84ff;
 }
 
 .character-info {

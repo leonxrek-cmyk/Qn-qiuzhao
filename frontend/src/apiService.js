@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'axios';
 
 // 创建axios实例
 const apiClient = axios.create({
@@ -72,12 +72,35 @@ export const apiService = {
     })
   },
 
-  // 文字转语音接口
-  textToSpeech(text, language = 'zh-CN') {
+  // 文字转语音接口 - 支持角色特定参数
+  textToSpeech(text, characterId = null, voice = 'zh-CN', speed = 1.0) {
     return apiClient.post('/text_to_speech', {
       text,
-      language
+      character_id: characterId,
+      voice,
+      speed
+    }, {
+      responseType: 'blob'  // 确保返回二进制数据
     })
+  },
+
+  // 获取角色配置
+  getCharacterConfigs() {
+    return apiClient.get('/character_config')
+      .then(data => {
+        // 确保返回的数据是角色配置数组
+        if (data && data.success && Array.isArray(data.configs)) {
+          return data.configs
+        }
+        // 如果API返回的数据格式不正确，返回空数组
+        console.warn('获取角色配置失败，返回的数据格式不正确:', data)
+        return []
+      })
+      .catch(error => {
+        console.error('获取角色配置失败:', error)
+        // 出错时返回空数组，避免应用崩溃
+        return []
+      })
   },
 
   // 流式响应处理
