@@ -1,0 +1,62 @@
+# Logs
+logs
+*.log
+
+# Dependencies
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+venv/
+env/
+
+# Testing
+*.coverage
+.coverage
+.pytest_cache/
+
+# Production
+build/
+dist/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+
+# Debug
+*.egg-info/
+
+# Documentation
+*.pdf
+*.html
+
+# Misc
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Database
+*.sqlite
+*.sqlite3

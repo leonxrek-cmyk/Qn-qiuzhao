@@ -1,0 +1,72 @@
+[
+  {
+    "id": "harry-potter",
+    "name": "哈利波特",
+    "description": "《哈利波特》系列小说的主角，一个年轻的巫师，勇敢、正义，对抗伏地魔的英雄。",
+    "tags": ["虚构", "巫师", "小说角色", "勇敢"],
+    "avatar": "/characters/harry-potter.png"
+  },
+  {
+    "id": "socrates",
+    "name": "苏格拉底",
+    "description": "古希腊著名哲学家，西方哲学的奠基人之一，以辩证法和伦理思想著称。",
+    "tags": ["历史人物", "哲学家", "古希腊", "智慧"],
+    "avatar": "/characters/socrates.png"
+  },
+  {
+    "id": "albert-einstein",
+    "name": "阿尔伯特·爱因斯坦",
+    "description": "20世纪最著名的物理学家，相对论的创立者，对现代物理学有着深远影响。",
+    "tags": ["科学家", "物理学家", "相对论", "天才"],
+    "avatar": "/characters/einstein.png"
+  },
+  {
+    "id": "gandhi",
+    "name": "甘地",
+    "description": "印度政治和精神领袖，非暴力抵抗运动的倡导者，带领印度走向独立。",
+    "tags": ["政治领袖", "和平主义者", "印度", "独立运动"],
+    "avatar": "/characters/gandhi.png"
+  },
+  {
+    "id": "marie-curie",
+    "name": "玛丽·居里",
+    "description": "首位获得两次诺贝尔奖的科学家，在放射性研究领域做出了开创性贡献。",
+    "tags": ["科学家", "物理学家", "化学家", "诺贝尔奖"],
+    "avatar": "/characters/curie.png"
+  },
+  {
+    "id": "confucius",
+    "name": "孔子",
+    "description": "中国古代伟大的思想家、教育家，儒家学派创始人，其思想影响了东亚文化数千年。",
+    "tags": ["哲学家", "教育家", "中国古代", "儒家"],
+    "avatar": "/characters/confucius.png"
+  },
+  {
+    "id": "leonardo-da-vinci",
+    "name": "列奥纳多·达·芬奇",
+    "description": "意大利文艺复兴时期的艺术家、科学家、发明家，代表作有《蒙娜丽莎》等。",
+    "tags": ["艺术家", "科学家", "发明家", "文艺复兴"],
+    "avatar": "/characters/leonardo.png"
+  },
+  {
+    "id": "nelson-mandela",
+    "name": "纳尔逊·曼德拉",
+    "description": "南非前总统，反种族隔离运动领袖，诺贝尔和平奖获得者。",
+    "tags": ["政治领袖", "和平主义者", "南非", "反种族隔离"],
+    "avatar": "/characters/mandela.png"
+  },
+  {
+    "id": "william-shakespeare",
+    "name": "威廉·莎士比亚",
+    "description": "英国文艺复兴时期最伟大的剧作家和诗人，代表作有《哈姆雷特》等。",
+    "tags": ["文学家", "剧作家", "诗人", "英国"],
+    "avatar": "/characters/shakespeare.png"
+  },
+  {
+    "id": "ada-lovelace",
+    "name": "艾达·洛夫莱斯",
+    "description": "英国数学家，被认为是世界上第一位计算机程序员，为巴贝奇的分析机编写了算法。",
+    "tags": ["数学家", "程序员", "女性科学家", "计算机先驱"],
+    "avatar": "/characters/ada.png"
+  }
+]
