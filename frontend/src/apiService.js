@@ -42,7 +42,7 @@ export const apiService = {
   },
 
   // 基础聊天接口
-  chat(messages, model = 'deepseek-v3', stream = false) {
+  chat(messages, model = 'x-ai/grok-4-fast', stream = false) {
     return apiClient.post('/chat', {
       messages,
       model,
@@ -51,7 +51,7 @@ export const apiService = {
   },
 
   // 角色扮演聊天接口
-  characterChat(characterName, characterDescription, userQuery, model = 'deepseek-v3', stream = false) {
+  characterChat(characterName, characterDescription, userQuery, model = 'x-ai/grok-4-fast', stream = false) {
     return apiClient.post('/character_chat', {
       character_name: characterName,
       character_description: characterDescription,

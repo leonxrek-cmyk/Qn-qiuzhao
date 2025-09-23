@@ -6,6 +6,7 @@ from voice_service import VoiceService
 import os
 import json
 import base64
+import tempfile
 
 def create_app():
     # 创建Flask应用实例
@@ -278,6 +279,3 @@ if __name__ == '__main__':
         port=app.config['FLASK_RUN_PORT'],
         debug=app.config['FLASK_ENV'] == 'development'
     )
-
-# 注意：需要导入tempfile模块
-import tempfile

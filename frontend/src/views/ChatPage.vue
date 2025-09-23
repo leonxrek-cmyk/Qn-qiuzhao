@@ -170,7 +170,7 @@ export default {
           this.currentCharacter.name,
           this.currentCharacter.description,
           userMessage,
-          'deepseek-v3',
+          'x-ai/grok-4-fast',
           false // 非流式响应
         )
         
