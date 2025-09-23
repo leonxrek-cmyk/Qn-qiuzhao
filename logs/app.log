@@ -1,0 +1,81 @@
+2025-09-23 22:25:10,813 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.24.129:5000
+2025-09-23 22:25:10,814 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-23 22:25:10,815 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:25:11,687 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:25:11,691 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:25:18,714 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:25:18] "[33mGET /models HTTP/1.1[0m" 404 -
+2025-09-23 22:25:21,793 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:25:21] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:25:29,560 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:25:29] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:31:01,404 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Administrator\\Desktop\\Qiniu\\Qn-qiuzhao\\backend\\app.py', reloading
+2025-09-23 22:31:01,519 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:31:02,352 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:31:02,357 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:33:35,545 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:33:35] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:33:38,162 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:33:38] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:34:35,286 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:34:35] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:34:46,413 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:34:46] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:34:48,595 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:34:48] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:34:51,074 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:34:51] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:40:29,575 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Administrator\\Desktop\\Qiniu\\Qn-qiuzhao\\backend\\app.py', reloading
+2025-09-23 22:40:29,671 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:40:30,470 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:40:30,475 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:40:39,580 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Administrator\\Desktop\\Qiniu\\Qn-qiuzhao\\backend\\app.py', reloading
+2025-09-23 22:40:39,639 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:40:40,450 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:40:40,453 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:41:06,769 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Administrator\\Desktop\\Qiniu\\Qn-qiuzhao\\backend\\config.py', reloading
+2025-09-23 22:41:06,840 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:41:07,689 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:41:07,693 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:41:15,795 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Administrator\\Desktop\\Qiniu\\Qn-qiuzhao\\backend\\config.py', reloading
+2025-09-23 22:41:15,861 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:41:16,648 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:41:16,652 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:42:15,377 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Administrator\\Desktop\\Qiniu\\Qn-qiuzhao\\backend\\test_aifc.py', reloading
+2025-09-23 22:42:15,491 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:42:16,313 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:42:16,318 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:42:41,865 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:42:41] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:42:43,295 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:42:43] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:43:28,479 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:43:28] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:43:34,246 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:43:34] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:43:38,513 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:43:38] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:44:18,749 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:44:18] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:47:03,139 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:47:03] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:47:22,222 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:47:22] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:48:18,195 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:48:18] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:48:49,010 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.24.129:5000
+2025-09-23 22:48:49,011 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-23 22:48:49,012 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:48:49,900 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:48:49,906 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:48:54,098 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:48:54] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:48:55,509 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:48:55] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:48:56,197 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:48:56] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:48:57,729 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:48:57] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:49:07,147 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:49:07] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:49:08,779 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:49:08] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:49:11,198 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:49:11] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:49:12,478 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:49:12] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:49:29,679 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:49:29] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:49:32,348 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:49:32] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:51:00,427 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Administrator\\Desktop\\Qiniu\\Qn-qiuzhao\\backend\\validate_json.py', reloading
+2025-09-23 22:51:00,514 - werkzeug - INFO -  * Restarting with stat
+2025-09-23 22:51:01,412 - werkzeug - WARNING -  * Debugger is active!
+2025-09-23 22:51:01,417 - werkzeug - INFO -  * Debugger PIN: 633-769-887
+2025-09-23 22:51:28,954 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:51:28] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:51:28,997 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:51:28] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:52:37,005 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:52:37] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:52:37,235 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:52:37] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:56:24,506 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:56:24] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:56:29,332 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:56:29] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:56:32,794 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:56:32] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:56:34,132 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:56:34] "[33mGET /character_config HTTP/1.1[0m" 404 -
+2025-09-23 22:56:35,393 - werkzeug - INFO - 127.0.0.1 - - [23/Sep/2025 22:56:35] "[33mGET /character_config HTTP/1.1[0m" 404 -
