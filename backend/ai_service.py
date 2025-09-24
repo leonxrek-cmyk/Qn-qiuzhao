@@ -2,6 +2,7 @@ from openai import OpenAI
 import requests
 import json
 import datetime
+import os
 from config import Config
 
 class AIService:
@@ -11,6 +12,21 @@ class AIService:
         self.api_key = Config.QINIU_AI_API_KEY
         self.default_model = Config.DEFAULT_MODEL
         
+        # 加载代理配置（如果有）
+        self.proxies = {
+            'http': os.getenv('HTTP_PROXY'),
+            'https': os.getenv('HTTPS_PROXY')
+        }
+        # 移除空代理配置
+        self.proxies = {k: v for k, v in self.proxies.items() if v is not None}
+        
+        # 方法开始日志
+        current_time = datetime.datetime.now().strftime('%Y%m%d/%H:%M')
+        if self.proxies:
+            print(f"[{current_time}--AIService-[Info]: 已加载代理配置: {self.proxies}")
+        else:
+            print(f"[{current_time}--AIService-[Info]: 未使用代理")
+
     def list_models(self):
         """获取所有可用的模型列表"""
         # 获取当前时间
@@ -71,7 +87,18 @@ class AIService:
             
             # 发送请求到chat/completions接口
             url = f"{self.base_url}/chat/completions"
-            response = requests.post(url, json=payload, headers=headers)
+            
+            # 添加代理支持并处理可能的代理错误
+            try:
+                response = requests.post(url, json=payload, headers=headers, proxies=self.proxies, timeout=30)
+            except requests.exceptions.ProxyError as proxy_err:
+                print(f"[{current_time}--{model}-{function_name}-[Error]: 代理连接错误: {str(proxy_err)}")
+                # 尝试不使用代理再次请求
+                print(f"[{current_time}--{model}-{function_name}-[Info]: 尝试不使用代理重新请求")
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
+            except requests.exceptions.Timeout as timeout_err:
+                print(f"[{current_time}--{model}-{function_name}-[Error]: 请求超时: {str(timeout_err)}")
+                return None
             
             # 检查响应状态
             if response.status_code == 200:
@@ -188,7 +215,18 @@ class AIService:
             # 发送请求到chat/completions接口
             url = f"{self.base_url}/chat/completions"
             print(f"[{current_time}--{model}-{function_name}-[Debug]: 调用API: {url}")
-            response = requests.post(url, json=payload, headers=headers)
+            
+            # 添加代理支持并处理可能的代理错误
+            try:
+                response = requests.post(url, json=payload, headers=headers, proxies=self.proxies, timeout=30)
+            except requests.exceptions.ProxyError as proxy_err:
+                print(f"[{current_time}--{model}-{function_name}-[Error]: 代理连接错误: {str(proxy_err)}")
+                # 尝试不使用代理再次请求
+                print(f"[{current_time}--{model}-{function_name}-[Info]: 尝试不使用代理重新请求")
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
+            except requests.exceptions.Timeout as timeout_err:
+                print(f"[{current_time}--{model}-{function_name}-[Error]: 请求超时: {str(timeout_err)}")
+                return None
             
             # 检查响应状态
             if response.status_code == 200:

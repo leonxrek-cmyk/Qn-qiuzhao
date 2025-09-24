@@ -1,8 +1,7 @@
-Flask==3.0.3
-python-dotenv==1.0.1
-requests==2.31.0
-SpeechRecognition
-pyaudio==0.2.14
-Flask-CORS==4.0.1
+Flask==2.0.1
+Flask-Cors==3.0.10
+SpeechRecognition==3.8.1
+pyaudio==0.2.11
+ffmpeg-python
 openai
 gtts==2.5.0

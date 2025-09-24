@@ -9,6 +9,10 @@ import json
 import base64
 import datetime
 import tempfile
+import speech_recognition as sr
+# 修复导入部分的重复导入问题
+import subprocess
+import ffmpeg
 
 def create_app():
     # 创建Flask应用实例
@@ -33,7 +37,8 @@ def create_app():
             with open(CHARACTERS_CONFIG_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except Exception as e:
-            LogService.error(model_name='App', function_name='load_character_configs', message=f'加载角色配置失败: {str(e)}')
+            current_time = LogService.get_current_time()
+            LogService.log(current_time=current_time, model_name='App', function_name='load_character_configs', log_level='Error', message=f'加载角色配置失败: {str(e)}')
             return {}
     
     # 全局角色配置数据
@@ -48,13 +53,13 @@ def create_app():
         function_name = 'get_models'
         
         # 请求开始日志
-        LogService.info(model_name=model_name, function_name=function_name, message='请求开始获取可用模型列表')
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message='请求开始获取可用模型列表')
         
         try:
             models = ai_service.list_models()
             
             # 请求成功日志
-            LogService.info(model_name=model_name, function_name=function_name, message=f'获取模型列表成功, 模型数量: {len(models)}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f'获取模型列表成功, 模型数量: {len(models)}')
             
             return jsonify({
                 'success': True,
@@ -62,12 +67,12 @@ def create_app():
             })
         except Exception as e:
             # 请求失败日志
-            LogService.error(model_name=model_name, function_name=function_name, message=f'获取模型列表失败: {str(e)}')
-            
-            return jsonify({
-                'success': False,
-                'error': str(e)
-            }), 500
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f'获取模型列表失败: {str(e)}')
+        
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
     
     @app.route('/api/character_config', methods=['GET'])
     def get_all_character_configs():
@@ -77,7 +82,7 @@ def create_app():
         model_name = 'API'
         
         try:
-            LogService.info(model_name=model_name, function_name=function_name, message='请求获取所有角色配置')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message='请求获取所有角色配置')
             
             # 将字典转换为列表格式，并添加角色ID
             config_list = []
@@ -86,13 +91,13 @@ def create_app():
                 config_with_id['id'] = character_id
                 config_list.append(config_with_id)
             
-            LogService.info(model_name=model_name, function_name=function_name, message=f'获取角色配置列表成功, 角色数量: {len(config_list)}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f'获取角色配置列表成功, 角色数量: {len(config_list)}')
             return jsonify({
                 'success': True,
                 'configs': config_list
             })
         except Exception as e:
-            LogService.error(model_name=model_name, function_name=function_name, message=f'获取角色配置列表失败: {str(e)}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f'获取角色配置列表失败: {str(e)}')
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -106,11 +111,11 @@ def create_app():
         model_name = 'API'
         
         try:
-            LogService.info(model_name=model_name, function_name=function_name, message=f'请求获取角色配置, 角色ID: {character_id}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f'请求获取角色配置, 角色ID: {character_id}')
             
             # 检查角色是否存在
             if character_id not in character_configs:
-                LogService.error(model_name=model_name, function_name=function_name, message=f'角色不存在: {character_id}')
+                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f'角色不存在: {character_id}')
                 return jsonify({
                     'success': False,
                     'error': '角色不存在'
@@ -118,13 +123,13 @@ def create_app():
             
             config = character_configs[character_id].copy()
             config['id'] = character_id
-            LogService.info(model_name=model_name, function_name=function_name, message=f'获取角色配置成功: {character_id}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f'获取角色配置成功: {character_id}')
             return jsonify({
                 'success': True,
                 'config': config
             })
         except Exception as e:
-            LogService.error(model_name=model_name, function_name=function_name, message=f'获取角色配置失败: {str(e)}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f'获取角色配置失败: {str(e)}')
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -137,17 +142,20 @@ def create_app():
         function_name = 'chat'
         
         try:
+            # 请求开始日志
+            LogService.log(current_time=current_time, model_name=Config.DEFAULT_MODEL, function_name=function_name, log_level='Info', message='请求开始处理聊天消息')
+            
             data = request.json
             messages = data.get('messages', [])
             model = data.get('model') or Config.DEFAULT_MODEL
             stream = data.get('stream', False)
             max_tokens = data.get('max_tokens', 4096)
             
-            # 请求开始日志
-            LogService.info(model_name=model, function_name=function_name, message=f'请求开始处理聊天消息, 消息数量: {len(messages)}, max_tokens: {max_tokens}')
+            # 调试日志：打印请求参数信息
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Debug', message=f'模型: {model}, 消息数量: {len(messages)}, max_tokens: {max_tokens}')
             
             if not messages:
-                LogService.error(model_name=model, function_name=function_name, message='请求参数错误: messages参数不能为空')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='请求参数错误: messages参数不能为空')
                 return jsonify({
                     'success': False,
                     'error': 'messages参数不能为空'
@@ -155,12 +163,12 @@ def create_app():
             
             # 调试日志：打印最后一条消息的部分内容
             last_message_content = messages[-1].get('content', '')[:50] if messages else ''
-            LogService.debug(model_name=model, function_name=function_name, message=f'最后一条消息内容: {last_message_content}...')
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Debug', message=f'最后一条消息内容: {last_message_content}...')
             
             response = ai_service.chat_completion(messages, model, stream, max_tokens)
             
             if not response:
-                LogService.error(model_name=model, function_name=function_name, message='AI服务响应为空')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='AI服务响应为空')
                 return jsonify({
                     'success': False,
                     'error': 'AI服务响应失败'
@@ -170,14 +178,15 @@ def create_app():
             content = response.get('choices', [{}])[0].get('message', {}).get('content', '')
             
             # 请求成功日志
-            LogService.info(model_name=model, function_name=function_name, message=f'聊天请求处理成功, 响应内容长度: {len(content)}字符')
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'聊天请求处理成功, 响应内容长度: {len(content)}字符')
             
             return jsonify({
                 'success': True,
                 'content': content
             })
         except Exception as e:
-            LogService.error(model_name=Config.DEFAULT_MODEL, function_name=function_name, message=f'聊天请求处理失败: {str(e)}')
+            # 请求失败日志
+            LogService.log(current_time=current_time, model_name=Config.DEFAULT_MODEL, function_name=function_name, log_level='Error', message=f'聊天请求处理失败: {str(e)}')
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -203,15 +212,15 @@ def create_app():
                 config = character_configs[character_id]
                 character_name = config['name']
                 character_description = config['description']
-                
-                # 请求开始日志
-                LogService.info(model_name=model, function_name=function_name, message=f'请求开始处理角色扮演聊天, 角色ID: {character_id}, 角色名称: {character_name}')
+            
+            # 请求开始日志
+            if character_id:
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'请求开始处理角色扮演聊天, 角色ID: {character_id}, 角色名称: {character_name}')
             else:
-                # 请求开始日志
-                LogService.info(model_name=model, function_name=function_name, message=f'请求开始处理角色扮演聊天, 角色名称: {character_name}')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'请求开始处理角色扮演聊天, 角色名称: {character_name}')
             
             if not character_name or not user_query:
-                LogService.error(model_name=model, function_name=function_name, message='请求参数错误: character_name和user_query参数不能为空')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='请求参数错误: character_name和user_query参数不能为空')
                 return jsonify({
                     'success': False,
                     'error': 'character_name和user_query参数不能为空'
@@ -219,7 +228,7 @@ def create_app():
             
             # 调试日志：打印用户查询的部分内容
             user_query_content = user_query[:50] if user_query else ''
-            LogService.debug(model_name=model, function_name=function_name, message=f'用户查询内容: {user_query_content}...')
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Debug', message=f'用户查询内容: {user_query_content}...')
             
             # 使用角色配置文件中的提示词模板（如果有）
             if character_id and character_id in character_configs:
@@ -241,7 +250,7 @@ def create_app():
                 )
             
             if not response:
-                LogService.error(model_name=model, function_name=function_name, message='AI服务响应为空')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='AI服务响应为空')
                 return jsonify({
                     'success': False,
                     'error': 'AI服务响应失败'
@@ -251,7 +260,7 @@ def create_app():
             content = response.get('choices', [{}])[0].get('message', {}).get('content', '')
             
             # 请求成功日志
-            LogService.info(model_name=model, function_name=function_name, message=f'角色扮演聊天请求处理成功, 响应内容长度: {len(content)}字符')
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'角色扮演聊天请求处理成功, 响应内容长度: {len(content)}字符')
             
             return jsonify({
                 'success': True,
@@ -259,7 +268,7 @@ def create_app():
                 'character_id': character_id
             })
         except Exception as e:
-            LogService.error(model_name=Config.DEFAULT_MODEL, function_name=function_name, message=f'角色扮演聊天请求处理失败: {str(e)}')
+            LogService.log(current_time=current_time, model_name=Config.DEFAULT_MODEL, function_name=function_name, log_level='Error', message=f'角色扮演聊天请求处理失败: {str(e)}')
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -274,42 +283,82 @@ def create_app():
         
         try:
             # 请求开始日志
-            LogService.info(model_name=model_name, function_name=function_name, message='请求开始处理语音识别')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message='请求开始处理语音识别')
             
-            # 这里简化实现，实际项目中可能需要处理上传的音频文件
-            # 目前只返回一个示例响应
-            # 在实际应用中，应该调用voice_service.recognize_speech()或voice_service.record_audio()
-            
-            # 示例：模拟语音识别结果
+            # 处理上传的音频文件
             if 'audio' in request.files:
                 # 处理上传的音频文件
                 audio_file = request.files['audio']
                 language = request.form.get('language', 'zh-CN')
                 
                 # 调试日志：打印音频文件信息
-                LogService.debug(model_name=model_name, function_name=function_name, message=f'接收音频文件: {audio_file.filename}, 语言: {language}')
+                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Debug', message=f'接收音频文件: {audio_file.filename}, 语言: {language}')
                 
-                # 保存到临时文件并处理
-                with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                    audio_file.save(temp_file.name)
-                    # 调用语音识别
-                    # 这里应该是实际的语音识别代码
-                    LogService.info(model_name=model_name, function_name=function_name, message=f'保存音频文件到临时路径: {temp_file.name}')
+                # 获取文件扩展名
+                file_ext = audio_file.filename.split('.')[-1].lower()
+                
+                # 保存原始音频文件到临时位置
+                with tempfile.NamedTemporaryFile(suffix=f'.{file_ext}', delete=False) as temp_original:
+                    audio_file.save(temp_original.name)
+                    original_path = temp_original.name
+                    
+                # 如果不是wav格式，需要转换为wav
+                if file_ext != 'wav':
+                    wav_path = original_path.replace(f'.{file_ext}', '.wav')
+                    
+                    # 使用ffmpeg-python库进行转换
+                    try:
+                        # 使用ffmpeg-python进行格式转换
+                        ffmpeg.input(original_path).output(
+                            wav_path,
+                            ac=1,  # 单声道
+                            ar=16000  # 16kHz采样率
+                        ).overwrite_output().run(capture_stdout=True, capture_stderr=True)
+                        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f'使用ffmpeg-python音频格式转换成功: {file_ext} -> wav')
+                    except Exception as e:
+                        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f'音频格式转换失败: {str(e)}')
+                        # 清理临时文件
+                        try:
+                            os.remove(original_path)
+                        except:
+                            pass
+                        return jsonify({
+                            'success': False,
+                            'error': '音频格式转换失败，请确保已安装FFmpeg'
+                        }), 500
+                else:
+                    wav_path = original_path
+                
+                # 调用语音识别服务进行实际识别
+                text = ""
+                try:
+                    with sr.AudioFile(wav_path) as source:
+                        audio_data = voice_service.recognizer.record(source)
+                        text = voice_service.recognize_speech(audio_data, language)
+                finally:
+                    # 清理临时文件
+                    try:
+                        if file_ext != 'wav' and os.path.exists(wav_path):
+                            os.remove(wav_path)
+                        if os.path.exists(original_path):
+                            os.remove(original_path)
+                    except:
+                        pass
             else:
-                LogService.debug(model_name=model_name, function_name=function_name, message='没有接收到音频文件，使用模拟结果')
-                language = request.form.get('language', 'zh-CN')
-                LogService.debug(model_name=model_name, function_name=function_name, message=f'语言设置: {language}')
+                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message='没有接收到音频文件')
+                return jsonify({
+                    'success': False,
+                    'error': '没有接收到音频文件'
+                }), 400
             
-            # 为了演示，返回一个模拟结果
-            mock_text = '这是一段模拟的语音识别结果'
-            LogService.info(model_name=model_name, function_name=function_name, message=f'语音识别处理完成, 识别文本长度: {len(mock_text)}字符')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f'语音识别处理完成, 识别文本长度: {len(text)}字符')
             
             return jsonify({
                 'success': True,
-                'text': mock_text
+                'text': text
             })
         except Exception as e:
-            LogService.error(model_name=model_name, function_name=function_name, message=f'语音识别处理失败: {str(e)}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f'语音识别处理失败: {str(e)}')
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -323,7 +372,8 @@ def create_app():
         model_name = 'TextToSpeech'
         
         try:
-            LogService.info(model_name=model_name, function_name=function_name, message='请求开始文本转语音处理')
+            # 请求开始日志
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message='请求开始文本转语音处理')
             
             data = request.json
             text = data.get('text', '')
@@ -332,7 +382,7 @@ def create_app():
             
             # 参数验证
             if not text:
-                LogService.error(model_name=model_name, function_name=function_name, message='请求参数错误: text参数不能为空')
+                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message='请求参数错误: text参数不能为空')
                 return jsonify({
                     'success': False,
                     'error': 'text参数不能为空'
@@ -340,7 +390,7 @@ def create_app():
             
             # 调试日志：打印文本内容的部分预览
             text_preview = text[:50] if text else ''
-            LogService.debug(model_name=model_name, function_name=function_name, message=f'文本内容: {text_preview}..., 语言: {language}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Debug', message=f'文本内容: {text_preview}..., 语言: {language}')
             
             # 获取角色特定的语音配置（如果提供了角色ID）
             voice_params = {}
@@ -348,20 +398,20 @@ def create_app():
                 config = character_configs[character_id]
                 voice_params['voice'] = config.get('tts_voice')
                 voice_params['speed'] = config.get('tts_speed', 1.0)
-                LogService.debug(model_name=model_name, function_name=function_name, message=f'使用角色特定语音配置: {character_id}')
+                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Debug', message=f'使用角色特定语音配置: {character_id}')
             
             # 调用语音服务进行文本转语音
             audio_file = voice_service.text_to_speech(text, language=language, **voice_params)
             
             if not audio_file:
-                LogService.error(model_name=model_name, function_name=function_name, message='文本转语音失败')
+                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message='文本转语音失败')
                 return jsonify({
                     'success': False,
                     'error': '文本转语音失败'
                 }), 500
             
             # 返回音频文件
-            LogService.info(model_name=model_name, function_name=function_name, message=f'文本转语音成功, 文本长度: {len(text)}字符')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f'文本转语音成功, 文本长度: {len(text)}字符')
             
             # 创建临时文件用于返回
             temp_output = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
@@ -391,7 +441,7 @@ def create_app():
             return response
             
         except Exception as e:
-            LogService.error(model_name=model_name, function_name=function_name, message=f'文本转语音处理失败: {str(e)}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f'文本转语音处理失败: {str(e)}')
             return jsonify({
                 'success': False,
                 'error': str(e)
@@ -405,7 +455,7 @@ def create_app():
         
         try:
             # 请求开始日志
-            LogService.info(model_name=Config.DEFAULT_MODEL, function_name=function_name, message='请求开始处理多模态聊天')
+            LogService.log(current_time=current_time, model_name=Config.DEFAULT_MODEL, function_name=function_name, log_level='Info', message='请求开始处理多模态聊天')
             
             # 检查是否是表单数据（可能包含文件）
             if 'Content-Type' in request.headers and 'multipart/form-data' in request.headers['Content-Type']:
@@ -449,21 +499,22 @@ def create_app():
                 model = data.get('model') or Config.DEFAULT_MODEL
             
             # 调试日志：打印请求参数信息
+            # 调试日志：打印请求参数信息
             input_types = []
             if text: input_types.append('text')
             if image: input_types.append('image')
             if audio: input_types.append('audio')
             if video: input_types.append('video')
-            LogService.debug(model_name=model, function_name=function_name, message=f'模型: {model}, 输入类型: {", ".join(input_types)}')
-            
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Debug', message=f'模型: {model}, 输入类型: {", ".join(input_types)}')
+
             # 调试日志：打印文本内容的部分预览
             if text:
                 text_preview = text[:50] if text else ''
-                LogService.debug(model_name=model, function_name=function_name, message=f'文本内容: {text_preview}...')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Debug', message=f'文本内容: {text_preview}...')
             
             # 至少需要一个输入类型
             if not any([text, image, audio, video]):
-                LogService.error(model_name=model, function_name=function_name, message='请求参数错误: 至少需要提供text、image、audio或video中的一项')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='请求参数错误: 至少需要提供text、image、audio或video中的一项')
                 return jsonify({
                     'success': False,
                     'error': '至少需要提供text、image、audio或video中的一项'
@@ -473,7 +524,7 @@ def create_app():
             response = ai_service.multimodal_completion(text, image, audio, video, model)
             
             if not response:
-                LogService.error(model_name=model, function_name=function_name, message='多模态服务响应为空')
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='多模态服务响应为空')
                 return jsonify({
                     'success': False,
                     'error': '多模态服务响应失败'
@@ -483,14 +534,14 @@ def create_app():
             content = response.get('choices', [{}])[0].get('message', {}).get('content', '')
             
             # 请求成功日志
-            LogService.info(model_name=model, function_name=function_name, message=f'多模态聊天请求处理成功, 响应内容长度: {len(content)}字符')
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'多模态聊天请求处理成功, 响应内容长度: {len(content)}字符')
             
             return jsonify({
                 'success': True,
                 'content': content
             })
         except Exception as e:
-            LogService.error(model_name=Config.DEFAULT_MODEL, function_name=function_name, message=f'多模态聊天请求处理失败: {str(e)}')
+            LogService.log(current_time=current_time, model_name=Config.DEFAULT_MODEL, function_name=function_name, log_level='Error', message=f'多模态聊天请求处理失败: {str(e)}')
             return jsonify({
                 'success': False,
                 'error': str(e)
