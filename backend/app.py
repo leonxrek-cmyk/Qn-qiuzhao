@@ -9,8 +9,6 @@ import json
 import base64
 import datetime
 import tempfile
-import speech_recognition as sr
-# 修复导入部分的重复导入问题
 import subprocess
 import ffmpeg
 
@@ -165,9 +163,18 @@ def create_app():
             last_message_content = messages[-1].get('content', '')[:50] if messages else ''
             LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Debug', message=f'最后一条消息内容: {last_message_content}...')
             
-            response = ai_service.chat_completion(messages, model, stream, max_tokens)
+            # 调用chat_completion，接收元组返回值 (result, error_msg)
+            result, error_msg = ai_service.chat_completion(messages, model, stream, max_tokens)
             
-            if not response:
+            # 检查是否有错误
+            if error_msg:
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message=f'AI服务返回错误: {error_msg}')
+                return jsonify({
+                    'success': False,
+                    'error': error_msg
+                }), 500
+            
+            if not result:
                 LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='AI服务响应为空')
                 return jsonify({
                     'success': False,
@@ -175,7 +182,7 @@ def create_app():
                 }), 500
             
             # 提取响应内容
-            content = response.get('choices', [{}])[0].get('message', {}).get('content', '')
+            content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
             
             # 请求成功日志
             LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'聊天请求处理成功, 响应内容长度: {len(content)}字符')
@@ -239,17 +246,25 @@ def create_app():
                     messages = [{"role": "user", "content": prompt}]
                     response = ai_service.chat_completion(messages, model, stream)
                 else:
-                    # 使用原始方式调用
-                    response = ai_service.character_chat(
-                        character_name, character_description, user_query, model, stream
-                    )
+                    # 使用原始方式调用，接收元组返回值 (result, error_msg)
+                    result, error_msg = ai_service.character_chat(
+                    character_name, character_description, user_query, model, stream
+                )
             else:
-                # 使用原始方式调用
-                response = ai_service.character_chat(
+                # 使用原始方式调用，接收元组返回值 (result, error_msg)
+                result, error_msg = ai_service.character_chat(
                     character_name, character_description, user_query, model, stream
                 )
             
-            if not response:
+            # 检查是否有错误
+            if error_msg:
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message=f'AI服务返回错误: {error_msg}')
+                return jsonify({
+                    'success': False,
+                    'error': error_msg
+                }), 500
+            
+            if not result:
                 LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='AI服务响应为空')
                 return jsonify({
                     'success': False,
@@ -257,7 +272,7 @@ def create_app():
                 }), 500
             
             # 提取响应内容
-            content = response.get('choices', [{}])[0].get('message', {}).get('content', '')
+            content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
             
             # 请求成功日志
             LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'角色扮演聊天请求处理成功, 响应内容长度: {len(content)}字符')
@@ -499,7 +514,6 @@ def create_app():
                 model = data.get('model') or Config.DEFAULT_MODEL
             
             # 调试日志：打印请求参数信息
-            # 调试日志：打印请求参数信息
             input_types = []
             if text: input_types.append('text')
             if image: input_types.append('image')
@@ -520,10 +534,18 @@ def create_app():
                     'error': '至少需要提供text、image、audio或video中的一项'
                 }), 400
             
-            # 调用多模态服务
-            response = ai_service.multimodal_completion(text, image, audio, video, model)
+            # 调用多模态服务，接收元组返回值 (result, error_msg)
+            result, error_msg = ai_service.multimodal_completion(text, image, audio, video, model)
             
-            if not response:
+            # 检查是否有错误
+            if error_msg:
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message=f'多模态服务返回错误: {error_msg}')
+                return jsonify({
+                    'success': False,
+                    'error': error_msg
+                }), 500
+            
+            if not result:
                 LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Error', message='多模态服务响应为空')
                 return jsonify({
                     'success': False,
@@ -531,7 +553,7 @@ def create_app():
                 }), 500
             
             # 提取响应内容
-            content = response.get('choices', [{}])[0].get('message', {}).get('content', '')
+            content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
             
             # 请求成功日志
             LogService.log(current_time=current_time, model_name=model, function_name=function_name, log_level='Info', message=f'多模态聊天请求处理成功, 响应内容长度: {len(content)}字符')

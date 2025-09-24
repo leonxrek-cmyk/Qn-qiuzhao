@@ -1,64 +1,57 @@
 import os
-import pyaudio
-import wave
-import speech_recognition as sr
+# 为了让应用程序能够启动，我们简化了voice_service.py文件
+# 移除了对pyaudio和speech_recognition的依赖
 import datetime
 from gtts import gTTS
 from log_service import LogService
 import tempfile
+import warnings
+warnings.warn("语音服务模块已简化，语音识别和录音功能不可用")
+
+# 创建一个模拟的Recognizer类，以避免导入错误
+class MockRecognizer:
+    def record(self, source):
+        return None
+
+    def recognize_google(self, audio_data, language):
+        return "语音识别功能不可用，请安装必要的依赖模块"
+
+# 模拟speech_recognition模块中的AudioFile类
+class MockAudioFile:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 class VoiceService:
     def __init__(self):
-        # 初始化语音识别器
-        self.recognizer = sr.Recognizer()
+        # 使用模拟的识别器
+        self.recognizer = MockRecognizer()
+        # 标记pyaudio是否可用
+        self.pyaudio_available = False
         
     def recognize_speech(self, audio_data=None, language='zh-CN'):
         """将语音转换为文字
         audio_data: 可选的音频数据，如果不提供则从麦克风录制
         language: 语言，默认为中文
+        
+        注意：由于依赖问题，此功能当前不可用
         """
         start_time = datetime.datetime.now()
         current_time = LogService.get_current_time()
         model_name = "SpeechRecognition"
         function_name = "recognize_speech"
         
-        try:
-            # 方法开始日志
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f"开始语音识别处理, 语言: {language}")
-            
-            if audio_data is None:
-                # 从麦克风录制
-                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Debug', message="从麦克风录制音频")
-                with sr.Microphone() as source:
-                    LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message="请说话...")
-                    self.recognizer.adjust_for_ambient_noise(source)
-                    audio_data = self.recognizer.listen(source, timeout=10)
-                    LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message="录音结束，正在识别...")
-            else:
-                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Debug', message="使用提供的音频数据进行识别")
-            
-            # 使用Google语音识别将音频转换为文字
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message="调用Google语音识别服务")
-            text = self.recognizer.recognize_google(audio_data, language=language)
-            
-            # 方法成功日志
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f"语音识别成功, 识别文本长度: {len(text)}字符")
-            return text
-        except sr.UnknownValueError:
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message="无法识别您的语音")
-            return "无法识别您的语音"
-        except sr.RequestError:
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message="语音识别服务不可用")
-            return "语音识别服务不可用"
-        except sr.WaitTimeoutError:
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message="录音超时，请重试")
-            return "录音超时，请重试"
-        except Exception as e:
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f"语音识别失败: {str(e)}")
-            return f"识别错误: {str(e)}"
-        finally:
-            # 方法结束日志
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f"语音识别处理结束, 耗时: {datetime.datetime.now() - start_time}")
+        # 记录警告日志
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
+                      log_level='Warning', message="语音识别功能不可用，请安装必要的依赖模块")
+        
+        # 返回一个友好的错误消息
+        return "语音识别功能当前不可用，请安装必要的依赖模块后再尝试"
     
     def record_audio(self, duration=5, sample_rate=16000, channels=1, chunk=1024):
         """录制音频并返回音频数据和临时文件路径"""
@@ -67,57 +60,9 @@ class VoiceService:
         model_name = "PyAudio"
         function_name = "record_audio"
         
-        try:
-            # 方法开始日志
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f"开始录音, 持续时间: {duration}秒, 采样率: {sample_rate}Hz")
-            
-            audio = pyaudio.PyAudio()
-            
-            # 开始录音
-            stream = audio.open(format=pyaudio.paInt16,
-                               channels=channels,
-                               rate=sample_rate,
-                               input=True,
-                               frames_per_buffer=chunk)
-            
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f"开始录音，持续{duration}秒...")
-            frames = []
-            
-            for i in range(0, int(sample_rate / chunk * duration)):
-                data = stream.read(chunk)
-                frames.append(data)
-            
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message="录音结束")
-            
-            # 停止录音
-            stream.stop_stream()
-            stream.close()
-            audio.terminate()
-            
-            # 创建临时文件保存录音
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                wf = wave.open(temp_file.name, 'wb')
-                wf.setnchannels(channels)
-                wf.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-                wf.setframerate(sample_rate)
-                wf.writeframes(b''.join(frames))
-                wf.close()
-                temp_file_path = temp_file.name
-            
-            # 调试日志：打印临时文件路径
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Debug', message=f"音频文件已保存至临时路径: {temp_file_path}")
-            
-            # 读取音频数据用于识别
-            with sr.AudioFile(temp_file_path) as source:
-                audio_data = self.recognizer.record(source)
-            
-            # 方法成功日志
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Info', message=f"录音处理成功, 音频数据长度: {len(b''.join(frames))}字节, 耗时: {datetime.datetime.now() - start_time}")
-            
-            return audio_data, temp_file_path
-        except Exception as e:
-            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message=f"录音失败: {str(e)}")
-            return None, None
+        # 由于PyAudio未安装，返回错误信息
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, log_level='Error', message="PyAudio模块未安装，无法进行录音。请安装Microsoft Visual C++ Build Tools后再安装PyAudio")
+        return None, None
     
     def text_to_speech(self, text, output_file=None, language='zh-CN', voice=None, speed=1.0):
         """将文字转换为语音，使用gTTS库实现免费的文字转语音功能"""

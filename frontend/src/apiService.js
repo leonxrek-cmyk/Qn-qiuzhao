@@ -109,40 +109,39 @@ export const apiService = {
 
   // 流式响应处理
   streamChat(characterName, characterDescription, userQuery, onChunk, onComplete, onError) {
-    const eventSource = new EventSource(`/api/character_chat?character_name=${encodeURIComponent(characterName)}&character_description=${encodeURIComponent(characterDescription)}&user_query=${encodeURIComponent(userQuery)}&stream=true`)
-    
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        if (data.content) {
-          onChunk(data.content)
+    // 使用axios的POST请求替代EventSource，以匹配后端实现
+    apiClient.post('/character_chat', {
+      character_name: characterName,
+      character_description: characterDescription,
+      user_query: userQuery,
+      stream: true,
+      model: 'deepseek-v3'
+    })
+    .then(response => {
+      if (response && response.success && response.content) {
+        // 后端当前不支持真正的流式响应，返回完整内容
+        onChunk(response.content)
+        if (onComplete) {
+          onComplete()
         }
-      } catch (error) {
-        console.error('解析流式响应失败:', error)
+      } else {
+        const error = new Error('流式响应格式错误')
+        console.error('流式响应格式错误:', response)
+        if (onError) {
+          onError(error)
+        }
       }
-    }
-    
-    eventSource.onopen = () => {
-      console.log('流式连接已建立')
-    }
-    
-    eventSource.onerror = (error) => {
-      console.error('流式连接错误:', error)
-      eventSource.close()
+    })
+    .catch(error => {
+      console.error('流式请求失败:', error)
       if (onError) {
         onError(error)
       }
-    }
+    })
     
-    eventSource.onclose = () => {
-      console.log('流式连接已关闭')
-      if (onComplete) {
-        onComplete()
-      }
-    }
-    
+    // 返回取消函数（当前简单实现）
     return () => {
-      eventSource.close()
+      console.log('取消流式请求')
     }
   }
 }
