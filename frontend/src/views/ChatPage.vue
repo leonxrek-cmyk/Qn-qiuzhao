@@ -60,7 +60,7 @@
         <button 
           class="voice-button" 
           @click="toggleVoiceRecording"
-          :disabled="!currentCharacter || isRecording"
+          :disabled="!currentCharacter"
           :class="{ recording: isRecording }"
         >
           {{ isRecording ? '🛑' : '🎤' }}
@@ -371,23 +371,83 @@ export default {
     // 处理录音数据
     async processRecording() {
       try {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
-        
-        // 实际调用后端语音识别API
-        const formData = new FormData()
-        formData.append('audio', audioBlob, 'recording.wav')
-        
-        try {
-          const response = await apiService.voiceRecognition(formData)
-          this.userInput = response.text || '语音识别结果为空'
-        } catch (apiError) {
-          console.error('语音识别API调用失败:', apiError)
-          // 使用模拟结果作为备选
-          this.userInput = '这是一段模拟的语音识别结果'
+        // 优先使用前端Web Speech API进行语音识别
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          const recognition = new SpeechRecognition();
+          
+          // 配置识别参数
+          recognition.lang = this.speechRecognitionLanguage || 'zh-CN';
+          recognition.interimResults = false;
+          recognition.maxAlternatives = 1;
+          
+          return new Promise((resolve) => {
+            // 使用更通用的格式，让浏览器自动选择最佳格式
+            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+            
+            // 创建音频URL用于播放
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            // 加载音频数据
+            const audio = new Audio(audioUrl);
+            
+            // 设置识别结果回调
+            recognition.onresult = (event) => {
+              const speechResult = event.results[0][0].transcript;
+              console.log('前端语音识别结果:', speechResult);
+              this.userInput = speechResult || '语音识别结果为空';
+              resolve();
+            };
+            
+            recognition.onerror = (event) => {
+              console.error('前端语音识别错误:', event.error);
+              // 前端识别失败，回退到后端API识别
+              this.fallbackToBackendRecognition(audioBlob);
+              resolve();
+            };
+            
+            recognition.onend = () => {
+              console.log('前端语音识别结束');
+              // 清理URL对象
+              URL.revokeObjectURL(audioUrl);
+            };
+            
+            // 开始识别
+            recognition.start();
+            
+            // 播放音频以便识别
+            // 注意：在某些浏览器中，可能需要用户交互才能播放音频
+            // audio.play().catch(e => console.error('无法播放音频:', e));
+          });
+        } else {
+          // 浏览器不支持Web Speech API，回退到后端识别
+          const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+          this.fallbackToBackendRecognition(audioBlob);
         }
       } catch (error) {
-        console.error('处理录音失败:', error)
-        alert('语音识别失败，请重试')
+        console.error('处理录音失败:', error);
+        alert('语音识别失败，请重试');
+      }
+    },
+    
+    // 回退到后端语音识别API
+    async fallbackToBackendRecognition(audioBlob) {
+      try {
+        console.log('使用后端API进行语音识别');
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.webm');
+        
+        try {
+          const response = await apiService.voiceRecognition(formData);
+          this.userInput = response.text || '语音识别结果为空';
+        } catch (apiError) {
+          console.error('语音识别API调用失败:', apiError);
+          // 使用模拟结果作为备选
+          this.userInput = '这是一段模拟的语音识别结果';
+        }
+      } catch (error) {
+        console.error('后端语音识别失败:', error);
+        this.userInput = '语音识别失败，请重试';
       }
     }
   }

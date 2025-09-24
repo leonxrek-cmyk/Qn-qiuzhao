@@ -1,8 +1,14 @@
 import axios from 'axios';
 
-// 创建axios实例
+// 创建axios实例（支持通过环境变量配置后端地址），并规范为以 /api 结尾
+const rawApiBase = (import.meta?.env?.VITE_API_BASE || '').trim()
+let apiBaseURL = '/api'
+if (rawApiBase) {
+  const trimmed = rawApiBase.replace(/\/$/, '')
+  apiBaseURL = /\/api$/.test(trimmed) ? trimmed : `${trimmed}/api`
+}
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: apiBaseURL,
   timeout: 60000,
   headers: {
     'Content-Type': 'application/json'
@@ -62,9 +68,7 @@ export const apiService = {
   },
 
   // 语音识别接口
-  voiceRecognition(audioFile) {
-    const formData = new FormData()
-    formData.append('audio', audioFile)
+  voiceRecognition(formData) {
     return apiClient.post('/voice_recognition', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
