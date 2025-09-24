@@ -1,0 +1,25 @@
+package org.qiyu.live.gift.dao;
+
+import jdk.jfr.DataAmount;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Date;
+
+public class GiftConfigDTO {
+
+
+    @Data
+    public class GiftConfigDTO implements Serializable{
+        @Serial
+        private static final long serialVersionUID=-1394363192115983898L;
+        private Integer giftId;
+        private String giftName;
+        private Integer status;
+        private String coverImgUrl;
+        private String svgaUrl;
+        private Date createTime;
+        private Date updateTime;
+    }
+
+}
