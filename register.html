@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI角色扮演 - 登录注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 动态背景效果 */
+        .floating-orbs {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .orb1 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            top: -150px;
+            left: -150px;
+            animation-delay: 0s;
+        }
+        
+        .orb2 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            bottom: -200px;
+            right: -200px;
+            animation-delay: 5s;
+        }
+        
+        .orb3 {
+            width: 250px;
+            height: 250px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            top: 50%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(100px, -100px) rotate(90deg); }
+            50% { transform: translate(-100px, 100px) rotate(180deg); }
+            75% { transform: translate(-100px, -100px) rotate(270deg); }
+        }
+        
+        /* 主容器 */
+        .auth-container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            width: 480px;
+            padding: 50px;
+            transform: translateY(0);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .auth-container:hover {
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+            transform: translateY(-5px);
+        }
+        
+        /* Logo和标题 */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .app-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        /* 标签切换 */
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 18px;
+        }
+        
+        /* 密码强度指示器 */
+        .password-strength {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .password-strength.show {
+            opacity: 1;
+        }
+        
+        .strength-bar {
+            flex: 1;
+            height: 3px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            transition: background 0.3s;
+        }
+        
+        .strength-bar.weak { background: #ef4444; }
+        .strength-bar.medium { background: #f59e0b; }
+        .strength-bar.strong { background: #10b981; }
+        
+        /* 记住我和忘记密码 */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .checkbox:checked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+        
+        .checkbox-label {
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        
+        .forgot-link {
+            font-size: 14px;
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .forgot-link:hover {
+            color: #764ba2;
+        }
+        
+        /* 提交按钮 */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .submit-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        /* 分隔线 */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+        }
+        
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        
+        .divider-text {
+            padding: 0 16px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        /* 社交登录按钮 */
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .social-btn:hover {
+            border-color: #667eea;
+            background: #f9fafb;
+        }
+        
+        .social-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* 提示信息 */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            animation: slideDown 0.3s;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .auth-container {
+                width: 90%;
+                padding: 30px;
+            }
+            
+            .app-title {
+                font-size: 24px;
+            }
+            
+            .social-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-orbs">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+    </div>
+    
+    <div class="auth-container">
+        <div class="logo-section">
+            <div class="logo">🎭</div>
+            <h1 class="app-title">AI 角色扮演</h1>
+            <p class="app-subtitle">与历史名人和虚构角色对话</p>
+        </div>
+        
+        <div class="alert" id="alert"></div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('login')">登录</button>
+            <button class="tab" onclick="switchTab('register')">注册</button>
+        </div>
+        
+        <!-- 登录表单 -->
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label class="form-label">邮箱或用户名</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" class="form-input" id="loginUsername" placeholder="请输入邮箱或用户名" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="请输入密码" required>
+                </div>
+            </div>
+            
+            <div class="form-options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="rememberMe" class="checkbox">
+                    <label for="rememberMe" class="checkbox-label">记住我</label>
+                </div>
+                <a href="#" class="forgot-link">忘记密码？</a>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                登录
+            </button>
+        </form>
+        
+        <!-- 注册表单 -->
+        <form id="registerForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+                <label class="form-label">用户名</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" class="form-input" id="regUsername" placeholder="请输入用户名" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">邮箱</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📧</span>
+                    <input type="email" class="form-input" id="regEmail" placeholder="请输入邮箱地址" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" class="form-input" id="regPassword" placeholder="请输入密码（至少8位）" required>
+                </div>
+                <div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar"></div>
+                    <div class="strength-bar"></div>
+                    <div class="strength-bar"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">确认密码</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" class="form-input" id="regConfirmPassword" placeholder="请再次输入密码" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                注册账号
+            </button>
+        </form>
+        
+        <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">或使用以下方式登录</span>
+            <div class="divider-line"></div>
+        </div>
+        
+        <div class="social-buttons">
+            <button class="social-btn" onclick="socialLogin('wechat')">
+                <span class="social-icon">💬</span>
+                <span>微信</span>
+            </button>
+            <button class="social-btn" onclick="socialLogin('qq')">
+                <span class="social-icon">🐧</span>
+                <span>QQ</span>
+            </button>
+            <button class="social-btn" onclick="socialLogin('github')">
+                <span class="social-icon">🐙</span>
+                <span>GitHub</span>
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 切换标签
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const alert = document.getElementById('alert');
+            
+            // 清除提示
+            alert.classList.remove('show');
+            
+            if (tab === 'login') {
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+        }
+        
+        // 显示提示
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+        
+        // 显示加载动画
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            if (show) {
+                loading.classList.add('show');
+            } else {
+                loading.classList.remove('show');
+            }
+        }
+        
+        // 密码强度检测
+        document.getElementById('regPassword').addEventListener('input', function(e) {
+            const password = e.target.value;
+            const strengthIndicator = document.getElementById('passwordStrength');
+            const bars = strengthIndicator.querySelectorAll('.strength-bar');
+            
+            if (password.length === 0) {
+                strengthIndicator.classList.remove('show');
+                return;
+            }
+            
+            strengthIndicator.classList.add('show');
+            
+            // 重置所有条
+            bars.forEach(bar => {
+                bar.className = 'strength-bar';
+            });
+            
+            let strength = 0;
+            
+            // 检查长度
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            
+            // 检查复杂度
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // 设置强度显示
+            if (strength <= 2) {
+                bars[0].classList.add('weak');
+            } else if (strength <= 4) {
+                bars[0].classList.add('medium');
+                bars[1].classList.add('medium');
+            } else {
+                bars[0].classList.add('strong');
+                bars[1].classList.add('strong');
+                bars[2].classList.add('strong');
+            }
+        });
+        
+        // 登录表单提交
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            showLoading(true);
+            
+            try {
+                // 模拟API调用
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // 这里应该调用实际的登录API
+                // const response = await fetch('/api/auth/login', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ username, password, rememberMe })
+                // });
+                
+                showLoading(false);
+                showAlert('登录成功！正在跳转...', 'success');
+                
+                // 存储token
+                if (rememberMe) {
+                    localStorage.setItem('authToken', 'mock-token-123');
+                } else {
+                    sessionStorage.setItem('authToken', 'mock-token-123');
+                }
+                
+                // 跳转到主页面
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1500);
+                
+            } catch (error) {
+                showLoading(false);
+                showAlert('登录失败，请检查用户名和密码', 'error');
+            }
+        });
+        
+        // 注册表单提交
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            // 验证密码
+            if (password !== confirmPassword) {
+                showAlert('两次输入的密码不一致', 'error');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showAlert('密码长度至少为8位', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // 模拟API调用
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // 这里应该调用实际的注册API
+                // const response = await fetch('/api/auth/register', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ username, email, password })
+                // });
+                
+                showLoading(false);
+                showAlert('注册成功！请登录', 'success');
+                
+                // 切换到登录标签
+                setTimeout(() => {
+                    switchTab('login');
+                    document.getElementById('loginUsername').value = username;
+                }, 1500);
+                
+            } catch (error) {
+                showLoading(false);
+                showAlert('注册失败，请稍后重试', 'error');
+            }
+        });
+        
+        // 社交登录
+        function socialLogin(platform) {
+            showLoading(true);
+            
+            // 模拟社交登录
+            setTimeout(() => {
+                showLoading(false);
+                showAlert(`正在使用${platform}登录...`, 'success');
+                
+                // 这里应该调用实际的OAuth认证
+                // window.location.href = `/api/auth/oauth/${platform}`;
+            }, 1000);
+        }
+        
+        // 忘记密码
+        document.querySelector('.forgot-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            showAlert('密码重置功能即将上线', 'success');
+        });
+        
+        // 页面加载时检查是否已登录
+        window.addEventListener('load', function() {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            if (token) {
+                // 如果已登录，可以显示不同的UI或自动跳转
+                // window.location.href = '/index.html';
+            }
+        });
+    </script>
+</body>
+</html>
