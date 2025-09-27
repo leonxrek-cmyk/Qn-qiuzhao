@@ -1,8 +1,9 @@
 <template>
   <div class="history-overlay" v-if="isVisible" @click="closePanel"></div>
   
-  <!-- 左侧滑出箭头 -->
+  <!-- 左侧滑出箭头 - 游客模式下隐藏 -->
   <div 
+    v-if="isAuthenticated && !isGuestMode"
     class="history-trigger" 
     :class="{ active: isVisible }"
     @click="togglePanel"
@@ -19,8 +20,8 @@
     </div>
   </div>
 
-  <!-- 历史记录面板 -->
-  <div class="history-panel" :class="{ visible: isVisible }">
+  <!-- 历史记录面板 - 游客模式下隐藏 -->
+  <div v-if="isAuthenticated && !isGuestMode" class="history-panel" :class="{ visible: isVisible }">
     <div class="panel-header">
       <h3>对话历史</h3>
       <button class="close-btn" @click="closePanel">✕</button>
@@ -95,7 +96,7 @@ export default {
   name: 'GlobalHistoryPanel',
   setup() {
     const router = useRouter()
-    const { isAuthenticated } = useAuth()
+    const { isAuthenticated, isGuestMode } = useAuth()
     
     const isVisible = ref(false)
     const isLoading = ref(false)
@@ -243,6 +244,7 @@ export default {
       showTooltip,
       historyList,
       isAuthenticated,
+      isGuestMode,
       togglePanel,
       closePanel,
       onHoverEnter,

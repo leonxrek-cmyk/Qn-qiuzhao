@@ -4347,3 +4347,11 @@
 2025-09-27 22:28:19,781 - werkzeug - INFO - 127.0.0.1 - - [27/Sep/2025 22:28:19] "GET /api/character_config HTTP/1.1" 200 -
 2025-09-27 22:28:20,841 - werkzeug - INFO - 127.0.0.1 - - [27/Sep/2025 22:28:20] "GET /api/user_sessions HTTP/1.1" 200 -
 2025-09-27 22:28:28,238 - werkzeug - INFO - 127.0.0.1 - - [27/Sep/2025 22:28:28] "GET /api/character_config HTTP/1.1" 200 -
+2025-09-27 23:00:54,258 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.24.129:5000
+2025-09-27 23:00:54,260 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-27 23:00:54,260 - werkzeug - INFO -  * Restarting with stat
+2025-09-27 23:00:56,088 - werkzeug - WARNING -  * Debugger is active!
+2025-09-27 23:00:56,088 - werkzeug - INFO -  * Debugger PIN: 633-769-887

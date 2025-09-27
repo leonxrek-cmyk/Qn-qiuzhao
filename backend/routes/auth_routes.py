@@ -407,3 +407,43 @@ def update_email():
             'success': False,
             'error': '更新失败，请稍后重试'
         }), 500
+
+@auth_bp.route('/generate-guest-avatar', methods=['POST'])
+def generate_guest_avatar():
+    """为游客生成头像"""
+    current_time = LogService.get_current_time()
+    function_name = 'generate_guest_avatar'
+    model_name = 'Auth'
+    
+    try:
+        data = request.json
+        nickname = data.get('nickname', '').strip()
+        guest_id = data.get('guest_id', '').strip()
+        
+        if not nickname or not guest_id:
+            return jsonify({
+                'success': False,
+                'error': '昵称和游客ID不能为空'
+            }), 400
+        
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
+                     log_level='Info', message=f'为游客生成头像: {nickname}')
+        
+        # 生成头像（返回base64格式）
+        avatar_data = create_user_avatar(nickname)
+        
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
+                     log_level='Info', message=f'游客头像生成成功: {nickname}')
+        
+        return jsonify({
+            'success': True,
+            'avatar': avatar_data
+        })
+        
+    except Exception as e:
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
+                     log_level='Error', message=f'生成游客头像异常: {str(e)}')
+        return jsonify({
+            'success': False,
+            'error': '头像生成失败，请稍后重试'
+        }), 500
