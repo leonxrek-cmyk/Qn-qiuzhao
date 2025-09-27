@@ -1,4 +1,4 @@
-# AI角色扮演聊天系统
+# DeepTalk
 
 一个基于Vue.js和Flask的AI角色扮演聊天应用，支持多种AI角色与用户进行对话。
 

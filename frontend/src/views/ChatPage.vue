@@ -89,8 +89,8 @@ export default {
     MessageBubble
   },
   setup() {
-    const { isAuthenticated } = useAuth()
-    return { isAuthenticated }
+    const { isAuthenticated, isGuestMode } = useAuth()
+    return { isAuthenticated, isGuestMode }
   },
   data() {
     return {
@@ -143,34 +143,72 @@ export default {
     // 保存当前角色的状态
     saveCurrentCharacterState() {
       if (this.currentCharacter) {
-        this.characterStates[this.currentCharacter.id] = {
+        // 游客模式下使用sessionStorage，正常用户使用内存状态
+        const stateData = {
           messages: [...this.messages],
           sessionId: this.currentSessionId,
           isTyping: this.isTyping,
           requestId: this.currentRequestId,
           abortController: this.abortController
         }
+        
+        if (this.isGuestMode) {
+          // 游客模式：存储到sessionStorage
+          sessionStorage.setItem(`guest_character_${this.currentCharacter.id}`, JSON.stringify({
+            messages: stateData.messages,
+            sessionId: stateData.sessionId
+          }))
+        } else {
+          // 正常用户：存储到内存
+          this.characterStates[this.currentCharacter.id] = stateData
+        }
+        
         console.log('保存角色状态:', this.currentCharacter.id, {
           messageCount: this.messages.length,
           isTyping: this.isTyping,
-          hasRequest: !!this.currentRequestId
+          hasRequest: !!this.currentRequestId,
+          mode: this.isGuestMode ? 'guest' : 'user'
         })
       }
     },
 
     // 恢复角色状态
     restoreCharacterState(characterId) {
-      const state = this.characterStates[characterId]
+      let state = null
+      
+      if (this.isGuestMode) {
+        // 游客模式：从sessionStorage恢复
+        const guestData = sessionStorage.getItem(`guest_character_${characterId}`)
+        if (guestData) {
+          try {
+            const parsed = JSON.parse(guestData)
+            state = {
+              messages: parsed.messages || [],
+              sessionId: parsed.sessionId || null,
+              isTyping: false,
+              requestId: null,
+              abortController: null
+            }
+          } catch (error) {
+            console.error('解析游客状态失败:', error)
+          }
+        }
+      } else {
+        // 正常用户：从内存恢复
+        state = this.characterStates[characterId]
+      }
+      
       if (state) {
         this.messages = [...state.messages]
         this.currentSessionId = state.sessionId
-        this.isTyping = state.isTyping
-        this.currentRequestId = state.requestId
-        this.abortController = state.abortController
+        this.isTyping = state.isTyping || false
+        this.currentRequestId = state.requestId || null
+        this.abortController = state.abortController || null
         console.log('恢复角色状态:', characterId, {
           messageCount: this.messages.length,
           isTyping: this.isTyping,
-          hasRequest: !!this.currentRequestId
+          hasRequest: !!this.currentRequestId,
+          mode: this.isGuestMode ? 'guest' : 'user'
         })
       } else {
         // 没有保存的状态，初始化为空
@@ -179,7 +217,9 @@ export default {
         this.isTyping = false
         this.currentRequestId = null
         this.abortController = null
-        console.log('初始化角色状态:', characterId)
+        console.log('初始化角色状态:', characterId, {
+          mode: this.isGuestMode ? 'guest' : 'user'
+        })
       }
     },
 
@@ -320,8 +360,8 @@ export default {
       })
 
       try {
-        // 如果没有会话ID且用户已登录，创建新会话
-        if (!this.currentSessionId && this.isAuthenticated) {
+        // 如果没有会话ID且用户已登录且不是游客模式，创建新会话
+        if (!this.currentSessionId && this.isAuthenticated && !this.isGuestMode) {
           try {
             const sessionResponse = await apiService.createSession(this.currentCharacter.id)
             this.currentSessionId = sessionResponse.session_id
@@ -345,8 +385,8 @@ export default {
         })
 
         let response
-        if (this.currentSessionId) {
-          // 使用会话上下文
+        if (this.currentSessionId && !this.isGuestMode) {
+          // 使用会话上下文（仅限非游客模式）
           response = await this.makeApiCall(() => 
             apiService.characterChatById(
               this.currentCharacter.id,
@@ -363,7 +403,7 @@ export default {
             console.log('会话ID已更新:', this.currentSessionId)
           }
         } else {
-          // 不使用会话上下文
+          // 不使用会话上下文（游客模式或无会话ID）
           response = await this.makeApiCall(() =>
             apiService.characterChatById(
               this.currentCharacter.id,
@@ -484,6 +524,14 @@ export default {
     async createNewSession() {
       if (!this.currentCharacter) return
       
+      // 游客模式下不创建会话，只清空消息
+      if (this.isGuestMode) {
+        this.messages = []
+        this.currentSessionId = null
+        console.log('游客模式：清空对话历史')
+        return
+      }
+      
       try {
         const response = await apiService.createSession(this.currentCharacter.id)
         this.currentSessionId = response.session_id
@@ -495,6 +543,12 @@ export default {
 
     // 加载指定会话
     async loadSpecificSession(sessionId) {
+      // 游客模式下不加载会话
+      if (this.isGuestMode) {
+        console.log('游客模式：跳过会话加载')
+        return
+      }
+      
       try {
         const response = await apiService.getSessionMessages(sessionId)
         if (response.success) {

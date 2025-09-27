@@ -3,7 +3,7 @@
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
-          <h1>AI角色扮演聊天系统</h1>
+          <h1>DeepTalk</h1>
           <p>登录以保存您的对话历史和个人设置</p>
         </div>
 
@@ -111,11 +111,6 @@
           </button>
         </form>
 
-        <div class="login-footer">
-          <button class="guest-button" @click="continueAsGuest" :disabled="isLoading">
-            以游客身份继续
-          </button>
-        </div>
 
         <!-- 错误提示 -->
         <div v-if="errorMessage" class="error-message">
@@ -252,15 +247,6 @@ export default {
       }
     }
 
-    // 继续作为游客
-    const continueAsGuest = () => {
-      // 清除可能存在的认证信息
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('user_info')
-      
-      // 跳转到主页
-      router.push('/')
-    }
 
     // 重置表单
     const resetForms = () => {
@@ -281,7 +267,6 @@ export default {
       registerForm,
       handleLogin,
       handleRegister,
-      continueAsGuest,
       clearMessages,
       resetForms
     }
@@ -413,23 +398,6 @@ export default {
   cursor: not-allowed;
 }
 
-.login-footer {
-  padding: 1rem 2rem 2rem;
-  text-align: center;
-}
-
-.guest-button {
-  color: #666;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-decoration: underline;
-  font-size: 0.9rem;
-}
-
-.guest-button:hover:not(:disabled) {
-  color: #333;
-}
 
 .error-message {
   margin: 1rem 2rem;

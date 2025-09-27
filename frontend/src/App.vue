@@ -6,7 +6,7 @@
     <!-- 导航栏 - 在聊天页面隐藏 -->
     <nav class="navbar" v-show="!isChatPage">
       <div class="navbar-brand">
-        <h1>AI角色扮演聊天</h1>
+        <h1>DeepTalk</h1>
       </div>
       <div class="navbar-menu">
         <router-link to="/" class="nav-link">首页</router-link>
@@ -17,6 +17,7 @@
         <div class="navbar-user-section">
           <!-- 未登录状态 -->
           <div v-if="!isAuthenticated" class="auth-buttons">
+            <button @click="handleGuestLogin" class="nav-link guest-btn">游客体验</button>
             <router-link to="/login" class="nav-link login-btn">登录</router-link>
           </div>
           
@@ -40,15 +41,20 @@
               
               <div class="menu-divider"></div>
               
-              <button class="menu-item" @click="openPersonalInfo">
+              <button v-if="!isGuestMode" class="menu-item" @click="openPersonalInfo">
                 <span class="menu-icon">👤</span>
                 <span>个人信息</span>
               </button>
               
-              <button class="menu-item" @click="openChatHistory">
+              <button v-if="!isGuestMode" class="menu-item" @click="openChatHistory">
                 <span class="menu-icon">💬</span>
                 <span>对话历史</span>
               </button>
+              
+              <div v-if="isGuestMode" class="guest-notice">
+                <span class="menu-icon">ℹ️</span>
+                <span>游客模式 - 退出后数据将清除</span>
+              </div>
               
               <button class="menu-item logout-item" @click="handleLogout">
                 <span class="menu-icon">🚪</span>
@@ -69,7 +75,7 @@
 
     <!-- 页脚 -->
     <footer class="footer">
-      <p>&copy; 2025 AI角色扮演聊天 - 基于七牛云AI大模型</p>
+      <p>&copy; 2025 DeepTalk - 基于七牛云AI大模型 | 作者：Leonxrek</p>
     </footer>
 
     <!-- 弹窗遮罩和内容 -->
@@ -111,10 +117,12 @@ export default {
     const router = useRouter()
     const { 
       isAuthenticated, 
+      isGuestMode,
       currentUser, 
       userDisplayName, 
       userAvatar,
       isAdmin,
+      loginAsGuest,
       logout,
       initAuth
     } = useAuth()
@@ -139,6 +147,16 @@ export default {
     // 关闭用户菜单
     const closeUserMenu = () => {
       showUserMenu.value = false
+    }
+
+    // 处理游客登录
+    const handleGuestLogin = async () => {
+      try {
+        await loginAsGuest()
+        console.log('游客登录成功')
+      } catch (error) {
+        console.error('游客登录失败:', error)
+      }
     }
 
     // 处理登出
@@ -189,6 +207,7 @@ export default {
     return {
       // 认证状态
       isAuthenticated,
+      isGuestMode,
       currentUser,
       userDisplayName,
       userAvatar,
@@ -208,6 +227,7 @@ export default {
       // 方法
       toggleUserMenu,
       closeUserMenu,
+      handleGuestLogin,
       handleLogout,
       openPersonalInfo,
       openChatHistory,
@@ -278,6 +298,12 @@ body {
   margin-left: 20px;
 }
 
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .nav-link {
   text-decoration: none;
   color: var(--text-color);
@@ -319,6 +345,17 @@ body {
 
 .login-btn:hover {
   background: #3a6fe6 !important;
+  color: white !important;
+}
+
+/* 游客按钮样式 */
+.guest-btn {
+  background: #6c757d;
+  color: white !important;
+}
+
+.guest-btn:hover {
+  background: #5a6268 !important;
   color: white !important;
 }
 
@@ -447,6 +484,18 @@ body {
 .menu-icon {
   width: 16px;
   text-align: center;
+}
+
+/* 游客提示样式 */
+.guest-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #666;
+  font-size: 0.85rem;
+  background: #f8f9fa;
+  border-left: 3px solid #28a745;
 }
 
 /* 主内容区样式 */

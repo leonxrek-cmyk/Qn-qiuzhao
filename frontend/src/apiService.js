@@ -304,6 +304,14 @@ export const apiService = {
     })
   },
 
+  // 为游客生成头像
+  generateGuestAvatar(nickname, guestId) {
+    return apiClient.post('/auth/generate-guest-avatar', {
+      nickname: nickname,
+      guest_id: guestId
+    })
+  },
+
   // 管理员API
   // 获取所有用户
   getAllUsers() {
