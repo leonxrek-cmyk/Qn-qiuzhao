@@ -3,6 +3,11 @@
     <!-- 顶部角色信息栏 -->
     <div class="chat-header">
       <div class="character-info">
+        <button class="back-button" @click="backToCharacters" title="返回角色列表">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <div class="character-avatar">
           <img :src="currentCharacter?.avatar || '/default-avatar.png'" :alt="currentCharacter?.name" />
         </div>
@@ -12,9 +17,6 @@
         </div>
       </div>
       <div class="chat-actions">
-        <button class="action-button" @click="toggleResponseMode" :class="{ active: isVoiceMode }">
-          {{ isVoiceMode ? '📝 文字模式' : '🔊 语音模式' }}
-        </button>
         <button class="action-button" @click="clearChat">🗑️ 清空对话</button>
         <button class="action-button" @click="backToCharacters">👥 切换角色</button>
       </div>
@@ -37,7 +39,6 @@
         :is-user="message.isUser"
         :character="currentCharacter"
         :timestamp="message.timestamp"
-        :show-voice-player="!message.isUser && isVoiceMode"
         :character-id="message.characterId || (currentCharacter ? currentCharacter.id : null)"
       />
 
@@ -57,14 +58,6 @@
     <!-- 输入区域 -->
     <div class="chat-input-area">
       <div class="input-container">
-        <button 
-          class="voice-button" 
-          @click="toggleVoiceRecording"
-          :disabled="!currentCharacter"
-          :class="{ recording: isRecording }"
-        >
-          {{ isRecording ? '🛑' : '🎤' }}
-        </button>
         <input
           type="text"
           v-model="userInput"
@@ -81,373 +74,477 @@
           发送
         </button>
       </div>
-      <div v-if="isRecording" class="recording-indicator">
-        <p>正在录音... 点击麦克风按钮停止</p>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
 import MessageBubble from '../components/MessageBubble.vue'
-// 移除本地JSON导入
-// import charactersData from '../../../common/characters.json'
 import apiService from '../apiService.js'
+import { useAuth } from '../composables/useAuth.js'
 
 export default {
   name: 'ChatPage',
   components: {
     MessageBubble
   },
-  props: {
-    characterId: {
-      type: String,
-      default: null
-    }
+  setup() {
+    const { isAuthenticated } = useAuth()
+    return { isAuthenticated }
   },
   data() {
     return {
+      currentCharacter: null,
       messages: [],
       userInput: '',
-      currentCharacter: null,
       isTyping: false,
-      isRecording: false,
-      mediaRecorder: null,
-      audioChunks: [],
-      isVoiceMode: false, // 默认使用文字模式
-      hasLoadedCharacter: false
+      currentSessionId: null, // 当前会话ID
+      isLoadingSession: false, // 会话加载状态
+      hasLoadedCharacter: false,
+      currentRequestId: null, // 当前请求ID，用于取消过期请求
+      abortController: null, // 用于取消HTTP请求
+      characterStates: {}, // 存储每个角色的状态（消息、会话ID、等待状态等）
     }
   },
-  mounted() {
-    // 如果有characterId参数，加载对应角色
-    if (this.characterId) {
-      this.loadCharacter(this.characterId)
-    }
+  async mounted() {
+    await this.handleRouteChange()
   },
+  
   watch: {
-    // 监听characterId变化
-    characterId(newId) {
-      if (newId) {
-        this.loadCharacter(newId)
-      }
+    // 监听路由变化
+    '$route': {
+      handler: 'handleRouteChange',
+      immediate: false
     }
+  },
+  
+  beforeUnmount() {
+    // 组件销毁前取消所有请求
+    this.cancelCurrentRequest()
   },
   methods: {
-    // 加载角色信息
-    async loadCharacter(characterId) {
-      try {
-        // 调用API获取角色配置
-        const response = await apiService.getCharacterConfigs()
-        const character = response.find(c => c.id === characterId)
-        if (character) {
-          this.currentCharacter = character
-          // 清空历史消息
-          this.messages = []
-          
-          // 记录已加载角色
-          this.hasLoadedCharacter = true
-        } else {
-          console.error('未找到指定角色:', characterId)
-          // 使用备用角色数据
-          this.currentCharacter = this.getFallbackCharacter(characterId)
-          this.messages = []
-          this.hasLoadedCharacter = true
-        }
-      } catch (error) {
-        console.error('加载角色配置失败:', error)
-        // 网络错误时使用备用角色数据
-        this.currentCharacter = this.getFallbackCharacter(characterId)
-        this.messages = []
-        this.hasLoadedCharacter = true
-      }
-    },
-    
-    // 获取备用角色数据
-    getFallbackCharacter(characterId) {
-      const fallbackCharacters = {
-        'harry-potter': {
-          id: 'harry-potter',
-          name: '哈利·波特',
-          description: '来自霍格沃茨的年轻巫师',
-          tags: ['魔法', '冒险', '奇幻'],
-          avatar: '/harry-potter.png'
-        },
-        'socrates': {
-          id: 'socrates',
-          name: '苏格拉底',
-          description: '古希腊哲学家',
-          tags: ['哲学', '智慧', '教育'],
-          avatar: '/socrates.png'
-        },
-        'albert-einstein': {
-          id: 'albert-einstein',
-          name: '阿尔伯特·爱因斯坦',
-          description: '著名物理学家',
-          tags: ['科学', '物理', '相对论'],
-          avatar: '/einstein.png'
-        },
-        'confucius': {
-          id: 'confucius',
-          name: '孔子',
-          description: '中国古代思想家',
-          tags: ['哲学', '伦理', '教育'],
-          avatar: '/confucius.png'
-        },
-        'marie-curie': {
-          id: 'marie-curie',
-          name: '玛丽·居里',
-          description: '物理学家和化学家',
-          tags: ['科学', '物理', '化学'],
-          avatar: '/marie-curie.png'
-        },
-        'william-shakespeare': {
-          id: 'william-shakespeare',
-          name: '威廉·莎士比亚',
-          description: '英国著名剧作家和诗人',
-          tags: ['文学', '戏剧', '诗歌'],
-          avatar: '/shakespeare.png'
-        }
-      }
+    async handleRouteChange() {
+      // 保存当前角色的状态（如果有的话）
+      this.saveCurrentCharacterState()
       
-      return fallbackCharacters[characterId] || {
-        id: 'default',
-        name: '智能助手',
-        description: '一个通用的智能助手',
-        tags: ['通用', '帮助'],
-        avatar: '/default-avatar.png'
-      }
-    },
-    
-    // 切换响应模式（文字/语音）
-    toggleResponseMode() {
-      this.isVoiceMode = !this.isVoiceMode
-      if (this.isVoiceMode) {
-        console.log('切换到语音模式')
-      } else {
-        console.log('切换到文字模式')
+      // 从路由参数获取角色ID
+      const characterId = this.$route.params.characterId
+      if (characterId) {
+        await this.loadCharacter(characterId)
+        
+        // 检查是否有指定的会话ID
+        const sessionId = this.$route.query.session
+        if (sessionId && this.isAuthenticated) {
+          await this.loadSpecificSession(sessionId)
+        }
       }
     },
 
-    // 获取欢迎消息
+    // 保存当前角色的状态
+    saveCurrentCharacterState() {
+      if (this.currentCharacter) {
+        this.characterStates[this.currentCharacter.id] = {
+          messages: [...this.messages],
+          sessionId: this.currentSessionId,
+          isTyping: this.isTyping,
+          requestId: this.currentRequestId,
+          abortController: this.abortController
+        }
+        console.log('保存角色状态:', this.currentCharacter.id, {
+          messageCount: this.messages.length,
+          isTyping: this.isTyping,
+          hasRequest: !!this.currentRequestId
+        })
+      }
+    },
+
+    // 恢复角色状态
+    restoreCharacterState(characterId) {
+      const state = this.characterStates[characterId]
+      if (state) {
+        this.messages = [...state.messages]
+        this.currentSessionId = state.sessionId
+        this.isTyping = state.isTyping
+        this.currentRequestId = state.requestId
+        this.abortController = state.abortController
+        console.log('恢复角色状态:', characterId, {
+          messageCount: this.messages.length,
+          isTyping: this.isTyping,
+          hasRequest: !!this.currentRequestId
+        })
+      } else {
+        // 没有保存的状态，初始化为空
+        this.messages = []
+        this.currentSessionId = null
+        this.isTyping = false
+        this.currentRequestId = null
+        this.abortController = null
+        console.log('初始化角色状态:', characterId)
+      }
+    },
+
+    // 取消当前正在进行的请求（但不影响已保存的其他角色状态）
+    cancelCurrentRequest() {
+      if (this.abortController) {
+        console.log('取消正在进行的AI请求')
+        this.abortController.abort()
+        this.abortController = null
+      }
+      
+      // 重置当前状态
+      this.isTyping = false
+      this.currentRequestId = null
+      
+      // 如果有当前角色，更新其保存的状态
+      if (this.currentCharacter) {
+        const state = this.characterStates[this.currentCharacter.id]
+        if (state) {
+          state.isTyping = false
+          state.requestId = null
+          state.abortController = null
+        }
+      }
+    },
+
+    // 包装API调用以支持取消
+    async makeApiCall(apiFunction) {
+      // 由于当前的apiService不支持AbortController，
+      // 我们使用Promise.race来实现超时和取消检查
+      return new Promise((resolve, reject) => {
+        const apiPromise = apiFunction()
+        
+        // 检查取消状态的间隔
+        const checkCancelInterval = setInterval(() => {
+          if (this.abortController && this.abortController.signal.aborted) {
+            clearInterval(checkCancelInterval)
+            const error = new Error('Request was aborted')
+            error.name = 'AbortError'
+            reject(error)
+          }
+        }, 100)
+
+        apiPromise
+          .then(result => {
+            clearInterval(checkCancelInterval)
+            resolve(result)
+          })
+          .catch(error => {
+            clearInterval(checkCancelInterval)
+            reject(error)
+          })
+      })
+    },
+
+    async loadCharacter(characterId) {
+      try {
+        console.log('开始加载角色:', characterId)
+        
+        // 如果是相同角色，恢复状态而不是清空
+        if (this.currentCharacter && this.currentCharacter.id === characterId) {
+          console.log('相同角色，恢复状态')
+          this.restoreCharacterState(characterId)
+          return
+        }
+        
+        // 获取角色配置
+        const configs = await apiService.getCharacterConfigs()
+        this.currentCharacter = configs.find(char => char.id === characterId)
+        
+        if (!this.currentCharacter) {
+          console.error('未找到角色:', characterId)
+          this.$router.push('/')
+          return
+        }
+
+        console.log('角色加载成功:', this.currentCharacter)
+        
+        // 恢复或初始化角色状态
+        this.restoreCharacterState(characterId)
+        
+        this.hasLoadedCharacter = true
+        
+      } catch (error) {
+        console.error('加载角色失败:', error)
+        this.$router.push('/')
+      }
+    },
+
     getWelcomeMessage() {
       if (!this.currentCharacter) return ''
       
       const welcomeMessages = {
-        'harry-potter': '我刚从霍格沃茨魔法学校毕业，对抗伏地魔的经历让我成长了许多。',
-        'socrates': '我喜欢通过提问来引导人们思考哲学问题。什么问题困扰着你？',
-        'albert-einstein': '宇宙的奥秘总是令我着迷，尤其是相对论和量子力学。',
-        'confucius': '三人行必有我师焉。让我们一起探讨伦理和道德的问题。'
+        'harry-potter': '我刚从霍格沃茨回来，有什么魔法问题想问我吗？',
+        'sherlock-holmes': '有什么谜题需要我来推理吗？',
+        'einstein': '让我们一起探讨科学的奥秘吧！',
+        'shakespeare': '愿我的文字为你带来灵感！',
+        'confucius': '让我们谈论人生的智慧。',
+        'socrates': '让我们通过对话来寻找真理。'
       }
       
-      return welcomeMessages[this.currentCharacter.id] || '有什么我可以帮助你的吗？'
+      return welcomeMessages[this.currentCharacter.id] || '很高兴与你对话！'
     },
 
-    // 发送消息
     async sendMessage() {
-      if (!this.currentCharacter || !this.userInput.trim()) return
+      if (!this.userInput.trim() || !this.currentCharacter) return
 
-      const userMessage = this.userInput.trim()
-      
-      // 添加用户消息到消息列表
-      this.addMessage(userMessage, true)
-      
-      // 清空输入框
+      // 取消之前的请求
+      this.cancelCurrentRequest()
+
+      // 生成唯一的请求ID
+      const requestId = Date.now() + Math.random()
+      this.currentRequestId = requestId
+
+      // 创建AbortController
+      this.abortController = new AbortController()
+
+      const userMessage = {
+        id: Date.now(),
+        content: this.userInput,
+        isUser: true,
+        timestamp: new Date().toLocaleTimeString(),
+        characterId: this.currentCharacter.id
+      }
+
+      this.messages.push(userMessage)
+      const userQuery = this.userInput
+      const currentCharacterId = this.currentCharacter.id // 保存当前角色ID
       this.userInput = ''
-      
-      // 显示正在输入
       this.isTyping = true
-      
-      try {
-        // 调用AI API获取角色回复
-        const response = await apiService.characterChat(
-          this.currentCharacter.name,
-          this.currentCharacter.description,
-          userMessage,
-          'deepseek-v3',
-          false // 非流式响应
-        )
-        
-        // 添加角色回复到消息列表，并传递角色ID
-        this.addMessage(response.content, false, this.currentCharacter.id)
-      } catch (error) {
-        console.error('发送消息失败:', error)
-        this.addMessage('抱歉，我暂时无法回复，请稍后再试。', false, this.currentCharacter?.id)
-      } finally {
-        // 隐藏正在输入
-        this.isTyping = false
-        // 滚动到底部
-        this.scrollToBottom()
-      }
-    },
 
-    // 添加消息到列表
-    addMessage(content, isUser, characterId = null) {
-      this.messages.push({
-        id: Date.now() + Math.random(),
-        content: content,
-        isUser: isUser,
-        timestamp: new Date(),
-        characterId: characterId
-      })
+      // 立即保存状态，确保等待状态被保存
+      this.saveCurrentCharacterState()
+
       // 滚动到底部
-      this.scrollToBottom()
-    },
+      this.$nextTick(() => {
+        this.scrollToBottom()
+      })
 
-    // 滚动到消息底部
-    scrollToBottom() {
-      setTimeout(() => {
-        const container = this.$refs.messagesContainer
-        if (container) {
-          container.scrollTop = container.scrollHeight
+      try {
+        // 如果没有会话ID且用户已登录，创建新会话
+        if (!this.currentSessionId && this.isAuthenticated) {
+          try {
+            const sessionResponse = await apiService.createSession(this.currentCharacter.id)
+            this.currentSessionId = sessionResponse.session_id
+            console.log('创建新会话:', this.currentSessionId)
+          } catch (sessionError) {
+            console.error('创建会话失败:', sessionError)
+          }
         }
-      }, 100)
-    },
 
-    // 清空对话
-    clearChat() {
-      if (confirm('确定要清空当前对话吗？')) {
-        this.messages = []
+        // 检查请求是否已被取消
+        if (this.currentRequestId !== requestId) {
+          console.log('请求已被取消:', requestId)
+          return
+        }
+
+        console.log('发送消息到AI:', {
+          characterId: this.currentCharacter.id,
+          userQuery: userQuery,
+          sessionId: this.currentSessionId,
+          requestId: requestId
+        })
+
+        let response
+        if (this.currentSessionId) {
+          // 使用会话上下文
+          response = await this.makeApiCall(() => 
+            apiService.characterChatById(
+              this.currentCharacter.id,
+              userQuery,
+              'deepseek-v3',
+              false,
+              this.currentSessionId
+            )
+          )
+          
+          // 更新会话ID（如果后端返回了新的会话ID）
+          if (response.session_id && response.session_id !== this.currentSessionId) {
+            this.currentSessionId = response.session_id
+            console.log('会话ID已更新:', this.currentSessionId)
+          }
+        } else {
+          // 不使用会话上下文
+          response = await this.makeApiCall(() =>
+            apiService.characterChatById(
+              this.currentCharacter.id,
+              userQuery,
+              'deepseek-v3',
+              false
+            )
+          )
+        }
+
+        // 再次检查请求是否已被取消
+        if (this.currentRequestId !== requestId) {
+          console.log('响应被丢弃，请求已被取消:', requestId)
+          return
+        }
+
+        // 检查角色是否已切换
+        if (this.currentCharacter.id !== currentCharacterId) {
+          console.log('响应被丢弃，角色已切换:', currentCharacterId, '->', this.currentCharacter.id)
+          return
+        }
+
+        console.log('AI响应:', response)
+
+        const aiMessage = {
+          id: Date.now() + 1,
+          content: response.content,
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString(),
+          characterId: currentCharacterId // 使用请求时的角色ID
+        }
+
+        this.messages.push(aiMessage)
+
+        // 保存更新后的状态
+        this.saveCurrentCharacterState()
+
+        // 滚动到底部
+        this.$nextTick(() => {
+          this.scrollToBottom()
+        })
+
+      } catch (error) {
+        // 检查是否是请求被取消
+        if (error.name === 'AbortError') {
+          console.log('请求被用户取消:', requestId)
+          return
+        }
+
+        // 检查请求是否仍然有效
+        if (this.currentRequestId !== requestId) {
+          console.log('错误被忽略，请求已被取消:', requestId)
+          return
+        }
+
+        // 检查角色是否已切换
+        if (this.currentCharacter.id !== currentCharacterId) {
+          console.log('错误被忽略，角色已切换:', currentCharacterId, '->', this.currentCharacter.id)
+          return
+        }
+
+        console.error('发送消息失败:', error)
+        
+        const errorMessage = {
+          id: Date.now() + 1,
+          content: '抱歉，我现在无法回应。请稍后再试。',
+          isUser: false,
+          timestamp: new Date().toLocaleTimeString(),
+          characterId: currentCharacterId // 使用请求时的角色ID
+        }
+
+        this.messages.push(errorMessage)
+
+        // 保存更新后的状态
+        this.saveCurrentCharacterState()
+        
+        this.$nextTick(() => {
+          this.scrollToBottom()
+        })
+      } finally {
+        // 只有当前请求才清除状态
+        if (this.currentRequestId === requestId) {
+          this.isTyping = false
+          this.currentRequestId = null
+          this.abortController = null
+          // 保存状态变化
+          this.saveCurrentCharacterState()
+        }
       }
     },
 
-    // 返回角色列表
+    async clearChat() {
+      if (this.currentSessionId) {
+        try {
+          await apiService.clearSession(this.currentSessionId)
+          console.log('会话已清空:', this.currentSessionId)
+        } catch (error) {
+          console.error('清空会话失败:', error)
+        }
+      }
+      
+      this.messages = []
+      console.log('对话已清空')
+    },
+
     backToCharacters() {
       this.$router.push('/characters')
     },
 
-    // 切换录音状态
-    async toggleVoiceRecording() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('您的浏览器不支持语音录制功能')
-        return
+    scrollToBottom() {
+      const container = this.$refs.messagesContainer
+      if (container) {
+        container.scrollTop = container.scrollHeight
       }
+    },
 
-      if (this.isRecording) {
-        // 停止录音
-        this.stopRecording()
+
+    async createNewSession() {
+      if (!this.currentCharacter) return
+      
+      try {
+        const response = await apiService.createSession(this.currentCharacter.id)
+        this.currentSessionId = response.session_id
+        this.messages = []
+      } catch (error) {
+        console.error('创建新会话失败:', error)
+      }
+    },
+
+    // 加载指定会话
+    async loadSpecificSession(sessionId) {
+      try {
+        const response = await apiService.getSessionMessages(sessionId)
+        if (response.success) {
+          // 转换消息格式
+          this.messages = response.messages.map((msg, index) => ({
+            id: index + 1,
+            content: msg.content,
+            isUser: msg.role === 'user',
+            timestamp: new Date(msg.timestamp).toLocaleTimeString(),
+            characterId: this.currentCharacter.id
+          }))
+          
+          // 更新当前会话ID
+          this.currentSessionId = sessionId
+
+          // 保存加载的状态
+          this.saveCurrentCharacterState()
+          
+          // 滚动到底部
+          this.$nextTick(() => {
+            this.scrollToBottom()
+          })
+        }
+      } catch (error) {
+        console.error('加载指定会话失败:', error)
+        // 如果加载失败，创建新会话
+        await this.createNewSession()
+      }
+    },
+
+    formatDate(dateString) {
+      const date = new Date(dateString)
+      const now = new Date()
+      const diffTime = now - date
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      
+      if (diffDays === 0) {
+        return '今天 ' + date.toLocaleTimeString('zh-CN', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      } else if (diffDays === 1) {
+        return '昨天 ' + date.toLocaleTimeString('zh-CN', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      } else if (diffDays < 7) {
+        return diffDays + '天前'
       } else {
-        // 开始录音
-        await this.startRecording()
-      }
-    },
-
-    // 开始录音
-    async startRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        this.mediaRecorder = new MediaRecorder(stream)
-        this.audioChunks = []
-
-        this.mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            this.audioChunks.push(event.data)
-          }
-        }
-
-        this.mediaRecorder.onstop = async () => {
-          // 停止所有音轨
-          stream.getTracks().forEach(track => track.stop())
-          
-          // 处理录音数据
-          await this.processRecording()
-        }
-
-        this.mediaRecorder.start()
-        this.isRecording = true
-      } catch (error) {
-        console.error('开始录音失败:', error)
-        alert('无法访问麦克风，请确保已授权')
-      }
-    },
-
-    // 停止录音
-    stopRecording() {
-      if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-        this.mediaRecorder.stop()
-        this.isRecording = false
-      }
-    },
-
-    // 处理录音数据
-    async processRecording() {
-      try {
-        // 优先使用前端Web Speech API进行语音识别
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-          const recognition = new SpeechRecognition();
-          
-          // 配置识别参数
-          recognition.lang = this.speechRecognitionLanguage || 'zh-CN';
-          recognition.interimResults = false;
-          recognition.maxAlternatives = 1;
-          
-          return new Promise((resolve) => {
-            // 使用更通用的格式，让浏览器自动选择最佳格式
-            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-            
-            // 创建音频URL用于播放
-            const audioUrl = URL.createObjectURL(audioBlob);
-            
-            // 加载音频数据
-            const audio = new Audio(audioUrl);
-            
-            // 设置识别结果回调
-            recognition.onresult = (event) => {
-              const speechResult = event.results[0][0].transcript;
-              console.log('前端语音识别结果:', speechResult);
-              this.userInput = speechResult || '语音识别结果为空';
-              resolve();
-            };
-            
-            recognition.onerror = (event) => {
-              console.error('前端语音识别错误:', event.error);
-              // 前端识别失败，回退到后端API识别
-              this.fallbackToBackendRecognition(audioBlob);
-              resolve();
-            };
-            
-            recognition.onend = () => {
-              console.log('前端语音识别结束');
-              // 清理URL对象
-              URL.revokeObjectURL(audioUrl);
-            };
-            
-            // 开始识别
-            recognition.start();
-            
-            // 播放音频以便识别
-            // 注意：在某些浏览器中，可能需要用户交互才能播放音频
-            // audio.play().catch(e => console.error('无法播放音频:', e));
-          });
-        } else {
-          // 浏览器不支持Web Speech API，回退到后端识别
-          const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-          this.fallbackToBackendRecognition(audioBlob);
-        }
-      } catch (error) {
-        console.error('处理录音失败:', error);
-        alert('语音识别失败，请重试');
-      }
-    },
-    
-    // 回退到后端语音识别API
-    async fallbackToBackendRecognition(audioBlob) {
-      try {
-        console.log('使用后端API进行语音识别');
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'recording.webm');
-        
-        try {
-          const response = await apiService.voiceRecognition(formData);
-          this.userInput = response.text || '语音识别结果为空';
-        } catch (apiError) {
-          console.error('语音识别API调用失败:', apiError);
-          // 使用模拟结果作为备选
-          this.userInput = '这是一段模拟的语音识别结果';
-        }
-      } catch (error) {
-        console.error('后端语音识别失败:', error);
-        this.userInput = '语音识别失败，请重试';
+        return date.toLocaleDateString('zh-CN')
       }
     }
   }
@@ -455,44 +552,92 @@ export default {
 </script>
 
 <style scoped>
-/* 聊天页面样式 */
 .chat-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-width: 1000px;
-  margin: 0 auto;
-  background-color: white;
+  max-height: 100vh; /* 强制限制最大高度 */
+  background-color: #f5f5f5;
+  overflow: hidden; /* 防止整个页面滚动 */
+  position: fixed; /* 固定定位，确保不滚动 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
-/* 聊天头部 */
 .chat-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  padding: 16px 24px;
-  background-color: #f8f9fa;
+  padding: 1rem 2rem;
+  background: white;
   border-bottom: 1px solid #e0e0e0;
-}
-
-/* 切换按钮样式 */
-.action-button.active {
-  background-color: #4c84ff;
-  color: white;
-  border-color: #4c84ff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  flex-shrink: 0; /* 防止头部被压缩 */
+  position: relative;
+  z-index: 10;
+  gap: 1rem;
+  height: 100px; /* 增加头部高度，给角色信息更多空间 */
+  min-height: 100px;
+  max-height: 100px;
 }
 
 .character-info {
   display: flex;
   align-items: center;
+  gap: 1rem;
+}
+
+.back-button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.back-button svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateX(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.back-button:hover svg {
+  transform: translateX(-2px);
+}
+
+.back-button:active {
+  transform: translateX(-1px) scale(0.95);
 }
 
 .character-avatar {
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   overflow: hidden;
-  margin-right: 16px;
+  border: 3px solid #007bff;
+  flex-shrink: 0; /* 防止头像被压缩 */
+}
+
+.character-avatar.small {
+  width: 30px;
+  height: 30px;
+  border-width: 2px;
 }
 
 .character-avatar img {
@@ -501,156 +646,166 @@ export default {
   object-fit: cover;
 }
 
+.character-details {
+  flex: 1;
+  min-width: 0; /* 允许文本截断 */
+  overflow: hidden;
+}
+
 .character-details h2 {
-  font-size: 20px;
-  margin-bottom: 4px;
+  margin: 0 0 0.25rem 0;
   color: #333;
+  font-size: 1.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .character-details p {
-  font-size: 14px;
+  margin: 0.25rem 0 0 0;
   color: #666;
-  max-width: 500px;
+  font-size: 0.9rem;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .chat-actions {
   display: flex;
-  gap: 12px;
+  gap: 0.5rem;
+  flex-shrink: 0; /* 防止按钮区域被压缩 */
+  align-items: center;
 }
 
 .action-button {
-  padding: 8px 16px;
+  padding: 0.6rem 1.2rem;
   border: 1px solid #ddd;
-  background-color: white;
-  border-radius: 6px;
-  font-size: 14px;
+  background: white;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap; /* 防止按钮文字换行 */
+  flex-shrink: 0; /* 防止按钮被压缩 */
 }
 
 .action-button:hover {
   background-color: #f0f0f0;
 }
 
-/* 聊天消息区域 */
+.action-button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
-  background-color: #fafafa;
+  overflow-x: hidden; /* 防止水平滚动 */
+  padding: 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0; /* 确保flex子项可以收缩 */
+  max-height: calc(100vh - 180px); /* 减去头部(100px)和输入区域(80px)的高度 */
 }
 
 .welcome-message {
   text-align: center;
-  padding: 40px 20px;
-  background-color: white;
+  padding: 2rem;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+  /* 介绍信息卡片直接居中 */
+  align-self: center;
+  max-width: 600px; /* 限制最大宽度，保持美观 */
+  width: 100%;
 }
 
 .welcome-message p {
-  margin-bottom: 12px;
+  margin: 0.5rem 0;
   color: #666;
   line-height: 1.6;
+}
+
+.welcome-message p:first-child {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
 }
 
 .typing-indicator {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
-}
-
-.character-avatar.small {
-  width: 40px;
-  height: 40px;
-  margin-right: 12px;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  align-self: flex-start;
+  max-width: 70%;
 }
 
 .typing-dots {
   display: flex;
-  gap: 6px;
+  gap: 0.25rem;
 }
 
 .typing-dots span {
   width: 8px;
   height: 8px;
-  background-color: #4c84ff;
+  background-color: #007bff;
   border-radius: 50%;
-  animation: typing 1.4s infinite ease-in-out both;
+  animation: typing 1.4s infinite ease-in-out;
 }
 
-.typing-dots span:nth-child(1) {
-  animation-delay: -0.32s;
-}
-
-.typing-dots span:nth-child(2) {
-  animation-delay: -0.16s;
-}
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
 
 @keyframes typing {
   0%, 80%, 100% {
     transform: scale(0);
+    opacity: 0.5;
   }
   40% {
-    transform: scale(1.0);
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
-/* 输入区域 */
 .chat-input-area {
-  padding: 16px 24px;
-  background-color: white;
+  padding: 1rem 2rem;
+  background: white;
   border-top: 1px solid #e0e0e0;
+  flex-shrink: 0; /* 防止输入区域被压缩 */
+  position: relative;
+  z-index: 10;
+  height: 80px; /* 固定输入区域高度 */
+  min-height: 80px;
+  max-height: 80px;
 }
 
 .input-container {
   display: flex;
+  gap: 0.5rem;
   align-items: center;
-  gap: 12px;
-}
-
-.voice-button {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background-color: #f0f0f0;
-  font-size: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.voice-button:hover:not(:disabled) {
-  background-color: #e0e0e0;
-}
-
-.voice-button.recording {
-  background-color: #ff4d4f;
-  color: white;
-}
-
-.voice-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .text-input {
   flex: 1;
-  padding: 12px 20px;
+  padding: 0.75rem 1rem;
   border: 1px solid #ddd;
   border-radius: 24px;
-  font-size: 16px;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.2s;
 }
 
 .text-input:focus {
-  border-color: #4c84ff;
+  border-color: #007bff;
 }
 
 .text-input:disabled {
@@ -659,21 +814,18 @@ export default {
 }
 
 .send-button {
-  padding: 12px 24px;
-  background-color: #4c84ff;
+  padding: 0.75rem 1.5rem;
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 24px;
-  font-size: 16px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
+  font-size: 1rem;
+  transition: background-color 0.2s;
 }
 
 .send-button:hover:not(:disabled) {
-  background-color: #3a6ed8;
-  transform: translateY(-1px);
+  background-color: #0056b3;
 }
 
 .send-button:disabled {
@@ -681,52 +833,58 @@ export default {
   cursor: not-allowed;
 }
 
-.recording-indicator {
-  margin-top: 8px;
-  text-align: center;
-  color: #ff4d4f;
-  font-size: 14px;
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .chat-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    gap: 1rem;
+    height: 120px; /* 小屏幕上给更多高度 */
+    min-height: 120px;
+    max-height: 120px;
   }
   
-  .character-details p {
-    max-width: 100%;
-    white-space: normal;
+  .character-info {
+    text-align: left;
   }
   
-  .chat-actions {
-    width: 100%;
-    justify-content: flex-end;
+  .back-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .back-button svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .character-details h2 {
+    font-size: 1.25rem;
   }
   
   .chat-messages {
-    padding: 16px;
+    padding: 1rem;
+    max-height: calc(100vh - 200px); /* 小屏幕：头部120px + 输入80px */
   }
   
   .chat-input-area {
-    padding: 12px 16px;
+    padding: 1rem;
   }
   
-  .voice-button {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
+  .input-container {
+    flex-direction: column;
+    gap: 0.75rem;
   }
   
   .text-input {
-    font-size: 14px;
+    width: 100%;
   }
   
-  .send-button {
-    padding: 8px 16px;
-    font-size: 14px;
+  .welcome-message {
+    max-width: 90%; /* 小屏幕上限制宽度 */
   }
 }
+
 </style>

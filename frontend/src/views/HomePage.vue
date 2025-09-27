@@ -1,13 +1,14 @@
 <template>
   <div class="home-page">
+
     <!-- 欢迎部分 -->
     <section class="hero-section">
       <div class="hero-content">
         <h1>与历史名人、文学角色实时对话</h1>
-        <p>通过AI技术，让你能够与任何你感兴趣的角色进行真实的语音聊天体验</p>
+        <p>通过AI技术，让你能够与任何你感兴趣的角色进行真实的对话体验</p>
         <div class="hero-actions">
           <router-link to="/characters" class="btn-primary">浏览角色</router-link>
-          <router-link to="/chat" class="btn-secondary">开始聊天</router-link>
+          <router-link to="/characters" class="btn-secondary">开始聊天</router-link>
         </div>
       </div>
     </section>
@@ -80,35 +81,53 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
 import CharacterCard from '../components/CharacterCard.vue'
 import apiService from '../apiService'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'HomePage',
   components: {
     CharacterCard
   },
-  data() {
-    return {
-      popularCharacters: []
+  setup() {
+    const router = useRouter()
+    const popularCharacters = ref([])
+
+    // 加载热门角色
+    const loadPopularCharacters = async () => {
+      try {
+        const configs = await apiService.getCharacterConfigs()
+        // 按角色名称首字母排序，然后取前6个
+        const sortedConfigs = configs.sort((a, b) => {
+          return a.name.localeCompare(b.name, 'zh-CN', { sensitivity: 'base' })
+        })
+        popularCharacters.value = sortedConfigs.slice(0, 6)
+      } catch (error) {
+        console.error('加载角色数据失败:', error)
+        popularCharacters.value = []
+      }
     }
-  },
-  async mounted() {
-    try {
-      // 加载热门角色（使用apiService获取角色数据，并取前4个作为热门角色）
-      const configs = await apiService.getCharacterConfigs()
-      this.popularCharacters = configs.slice(0, 4)
-    } catch (error) {
-      console.error('加载热门角色失败:', error)
-    }
-  },
-  methods: {
-    selectCharacter(character) {
-      // 跳转到与该角色的聊天页面
-      this.$router.push({
+
+    // 选择角色
+    const selectCharacter = (character) => {
+      router.push({
         name: 'Chat',
         params: { characterId: character.id }
       })
+    }
+
+    onMounted(() => {
+      loadPopularCharacters()
+    })
+
+    return {
+      // 数据
+      popularCharacters,
+      
+      // 方法
+      selectCharacter
     }
   }
 }

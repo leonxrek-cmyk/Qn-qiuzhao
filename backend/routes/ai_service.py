@@ -2,7 +2,10 @@ from openai import OpenAI
 import requests
 import json
 import datetime
+import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from config import Config
 
 class AIService:
@@ -116,7 +119,7 @@ class AIService:
     
     def character_chat(self, character_name, character_description, user_query, 
                       model=None, stream=False):
-        """以特定角色进行对话"""
+        """以特定角色进行对话（兼容旧接口）"""
         # 获取当前时间
         current_time = datetime.datetime.now().strftime('%Y%m%d/%H:%M')
         function_name = 'character_chat'
@@ -153,6 +156,46 @@ class AIService:
             return result
         except Exception as e:
             print(f"[{current_time}--{model}-{function_name}-[Error]: 角色扮演聊天请求异常: {str(e)}")
+            return None
+    
+    def character_chat_with_context(self, messages, character_name=None, character_description=None, 
+                                   model=None, stream=False, max_tokens=4096):
+        """带上下文的角色扮演对话"""
+        # 获取当前时间
+        current_time = datetime.datetime.now().strftime('%Y%m%d/%H:%M')
+        function_name = 'character_chat_with_context'
+        if model is None:
+            model = self.default_model
+        
+        try:
+            # 方法开始日志
+            print(f"[{current_time}--{model}-{function_name}-[Info]: 开始处理带上下文的角色扮演聊天, 角色: {character_name}, 消息数: {len(messages)}")
+            
+            # 如果提供了角色信息但消息列表中没有系统消息，添加系统消息
+            if character_name and character_description and messages:
+                has_system_message = any(msg.get('role') == 'system' for msg in messages)
+                if not has_system_message:
+                    system_message = {
+                        "role": "system",
+                        "content": f"你是{character_name}。{character_description}请始终保持这个角色的身份和特点进行对话。"
+                    }
+                    messages = [system_message] + messages
+            
+            # 调试日志：打印消息概要
+            if messages:
+                last_user_msg = next((msg['content'][:50] for msg in reversed(messages) if msg.get('role') == 'user'), '')
+                print(f"[{current_time}--{model}-{function_name}-[Debug]: 最后用户消息: {last_user_msg}...")
+            
+            # 发送请求
+            result = self.chat_completion(messages, model, stream, max_tokens)
+            
+            # 处理响应结果
+            if result:
+                content_length = len(result.get('choices', [{}])[0].get('message', {}).get('content', ''))
+                print(f"[{current_time}--{model}-{function_name}-[Info]: 带上下文角色扮演聊天成功, 响应内容长度: {content_length}字符")
+            return result
+        except Exception as e:
+            print(f"[{current_time}--{model}-{function_name}-[Error]: 带上下文角色扮演聊天异常: {str(e)}")
             return None
     
     def multimodal_completion(self, text=None, image=None, audio=None, video=None, model=None, stream=False):
