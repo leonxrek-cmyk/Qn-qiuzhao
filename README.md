@@ -1,56 +1,69 @@
-# 七牛云AI角色扮演聊天平台
+# AI角色扮演聊天系统
 
-一个基于七牛云AI大模型X-Ai/Grok 4 Fast的角色扮演聊天网站，用户可以搜索自己感兴趣的角色并与其进行多模态交互（支持文本、图像、音频、视频输入）。
+一个基于Vue.js和Flask的AI角色扮演聊天应用，支持多种AI角色与用户进行对话。
+
+## 功能特性
+
+### 核心功能
+- **多角色扮演**: 支持多种预设AI角色（哈利·波特、福尔摩斯、爱因斯坦等）
+- **智能对话**: 基于OpenAI API的自然语言处理
+- **对话上下文**: 支持会话记忆，保持对话连贯性
+- **响应式设计**: 适配桌面和移动设备
+
+### 对话上下文功能
+- **会话管理**: 每个角色对话都有独立的会话ID
+- **上下文记忆**: AI能够记住之前的对话内容
+- **会话清空**: 支持清空当前会话历史
+- **多轮对话**: 支持长时间的连续对话
+
+## 技术栈
+
+### 后端
+- **Flask**: Web框架
+- **OpenAI API**: AI模型服务
+- **Flask-CORS**: 跨域支持
+- **Python-dotenv**: 环境变量管理
+
+### 前端
+- **Vue.js 3**: 前端框架
+- **Vue Router**: 路由管理
+- **Axios**: HTTP客户端
+- **Vite**: 构建工具
 
 ## 项目结构
 
 ```
-Qn-qiuzhao/
-├── backend/           # 后端Python代码
-│   ├── ai_service.py  # AI服务封装
-│   ├── voice_service.py # 语音服务封装
-│   └── app.py         # Flask应用入口
-├── frontend/          # 前端Vue代码
-│   ├── src/           # 前端源代码
-│   ├── package.json   # 前端依赖配置
-│   └── vite.config.js # Vite配置
-├── common/            # 公共资源
-│   └── characters.json # 角色数据
-└── README.md          # 项目说明文档
+├── backend/                    # 后端代码
+│   ├── routes/                 # 路由模块
+│   │   ├── ai_routes.py       # AI相关路由
+│   │   ├── character_routes.py # 角色配置路由
+│   │   └── session_routes.py   # 会话管理路由
+│   ├── ai_service.py          # AI服务
+│   ├── app.py                 # Flask应用主文件
+│   ├── character_configs.json # 角色配置文件
+│   ├── config.py              # 配置文件
+│   ├── log_service.py         # 日志服务
+│   ├── session_service.py     # 会话管理服务
+│   └── requirements.txt       # Python依赖
+├── frontend/                   # 前端代码
+│   ├── src/
+│   │   ├── components/        # Vue组件
+│   │   ├── views/             # 页面组件
+│   │   ├── router/            # 路由配置
+│   │   ├── apiService.js      # API服务
+│   │   └── main.js            # 应用入口
+│   ├── public/                # 静态资源
+│   └── package.json           # Node.js依赖
+├── logs/                      # 日志文件
+└── README.md                  # 项目文档
 ```
 
-## 功能特点
+## 安装和运行
 
-- **角色选择**：内置多种经典角色供用户选择
-- **文字聊天**：与AI角色进行实时文字对话
-- **语音交互**：支持语音输入和语音输出
-- **多模态支持**：支持文本、图像、音频、视频输入，返回文本响应
-- **角色搜索**：搜索和筛选感兴趣的角色
-- **个性化设置**：语言、主题、AI参数等配置
-
-## 团队分工说明
-
-### 曹艺洋
-- **技术全面负责**：主导前端代码开发工作，同时提供后端技术支持，确保前后端技术栈协同与整体架构一致性
-- **项目管理**：全面负责Pull Request（PR）的审核工作，制定并执行严格的代码审查标准，确保代码质量，并及时完成项目合并操作，保障项目开发进度
-- **原型开发**：独立完成项目初期基本业务原型的开发工作，构建可运行、可演示的系统雏形
-- **技术指导**：为后端开发团队提供开发模板示例，规范开发流程与代码风格，提升团队整体开发效率
-- **业务与技术设计**：全面负责业务需求分析、功能规划、接口设计及技术细节设计工作，确保系统设计的合理性、完整性与可扩展性
-
-### 薛雅倩、刘翔宇
-- **后端开发实现**：负责后端程序的具体编码与实现工作，严格遵循项目技术规范与编码标准
-- **需求落地**：根据曹艺洋提供的业务场景分析与技术设计方案，进行具体功能的编码实现，确保业务需求的准确落地
-- **代码重构**：在完成快速原型开发阶段后，负责Java业务代码的重构工作，优化代码结构，提升系统性能与可维护性
-- **技术优化**：持续关注后端系统的性能表现，识别并解决潜在技术问题，提出并实施优化方案，确保系统的稳定性与高效性
-
-## 技术栈
-
-- **前端**：Vue 3、Vite、Axios、Vue Router
-- **后端**：Python、Flask、Requests
-- **AI服务**：七牛云AI大模型X-Ai/Grok 4 Fast推理API
-- **语音处理**：Google语音识别API
-
-## 快速开始
+### 环境要求
+- Python 3.8+
+- Node.js 16+
+- OpenAI API密钥
 
 ### 后端设置
 
@@ -59,31 +72,19 @@ Qn-qiuzhao/
 cd backend
 ```
 
-2. 创建虚拟环境：
+2. 安装Python依赖：
 ```bash
-python -m venv venv
+pip install -r requirements.txt
 ```
 
-3. 激活虚拟环境：
-```bash
-# Windows
-env\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
-```
-
-4. 安装依赖：
-```bash
-pip install flask openai python-dotenv requests speech_recognition pyaudio
-```
-
-5. 创建`.env`文件，配置七牛云API密钥（如果不配置，将使用默认的API密钥）：
+3. 创建环境变量文件 `.env`：
 ```env
-QINIU_AI_API_KEY=sk-7b910549d43e0b5ca876b8aa3392f71fe1dd35b73c256f8e3b3a22bb708de331
-QINIU_AI_BASE_URL=https://openai.qiniu.com/v1
+OPENAI_API_KEY=your_openai_api_key_here
+FLASK_ENV=development
+FLASK_RUN_PORT=5000
 ```
 
-6. 启动后端服务：
+4. 启动后端服务：
 ```bash
 python app.py
 ```
@@ -95,7 +96,7 @@ python app.py
 cd frontend
 ```
 
-2. 安装依赖：
+2. 安装Node.js依赖：
 ```bash
 npm install
 ```
@@ -105,38 +106,102 @@ npm install
 npm run dev
 ```
 
-4. 在浏览器中访问：`http://localhost:3000`
-
-## 部署说明
-
-### 后端部署
-
-1. 安装依赖：
-```bash
-pip install -r requirements.txt
-```
-
-2. 使用Gunicorn或uWSGI部署Flask应用：
-```bash
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
-
-### 前端部署
-
-1. 构建前端项目：
+4. 构建生产版本：
 ```bash
 npm run build
 ```
 
-2. 将`dist`目录部署到Web服务器（如Nginx、Apache）
+## API接口
+
+### AI对话接口
+- `POST /api/chat` - 基础聊天
+- `POST /api/character_chat` - 角色扮演聊天
+- `POST /api/multimodal_chat` - 多模态聊天
+- `GET /api/models` - 获取可用模型
+
+### 角色管理接口
+- `GET /api/character_config` - 获取所有角色配置
+- `GET /api/character_config/<id>` - 获取特定角色配置
+
+### 会话管理接口
+- `POST /api/sessions` - 创建新会话
+- `GET /api/sessions/<id>` - 获取会话信息
+- `GET /api/sessions/<id>/messages` - 获取会话消息
+- `POST /api/sessions/<id>/clear` - 清空会话
+
+## 角色配置
+
+角色配置存储在 `backend/character_configs.json` 文件中，包含以下信息：
+- 角色ID和名称
+- 角色描述和背景
+- 角色标签
+- 语言风格设置
+
+示例配置：
+```json
+{
+  "harry-potter": {
+    "id": "harry-potter",
+    "name": "哈利·波特",
+    "description": "霍格沃茨魔法学校的学生，勇敢善良",
+    "tags": ["文学", "奇幻", "魔法"],
+    "avatar": "/harry-potter.png",
+    "prompt": "你现在扮演哈利·波特...",
+    "language_style": {
+      "tone": "勇敢而友好",
+      "vocabulary": "包含一些魔法相关术语",
+      "sentence_structure": "口语化，简短有力"
+    }
+  }
+}
+```
+
+## 开发指南
+
+### 添加新角色
+1. 在 `character_configs.json` 中添加角色配置
+2. 准备角色头像图片放入 `frontend/public/` 目录
+3. 重启后端服务以加载新配置
+
+### 自定义AI模型
+在 `config.py` 中修改 `DEFAULT_MODEL` 配置，或通过API参数指定模型。
+
+### 日志管理
+应用日志存储在 `logs/` 目录下：
+- `app.log` - 应用日志
+- `error.log` - 错误日志
+
+## 部署
+
+### 生产环境部署
+1. 设置环境变量 `FLASK_ENV=production`
+2. 使用WSGI服务器（如Gunicorn）运行后端
+3. 使用Nginx等反向代理服务器
+4. 构建前端生产版本并部署到静态文件服务器
+
+### Docker部署
+项目支持Docker容器化部署，可以创建相应的Dockerfile和docker-compose.yml文件。
 
 ## 注意事项
 
-- 默认使用X-Ai/Grok 4 Fast模型，支持多模态输入
-- 语音功能需要浏览器支持麦克风访问
-- 多模态功能支持上传图片、音频和视频文件
-- 项目处于开发阶段，可能会有功能更新和bug修复
+### API密钥安全
+- 不要将OpenAI API密钥提交到版本控制系统
+- 在生产环境中使用环境变量或密钥管理服务
 
-## License
+### 性能优化
+- 对于高并发场景，建议使用Redis等缓存系统
+- 可以实现会话数据的持久化存储
+- 考虑实现API请求限流和缓存
 
-MIT
+### 错误处理
+- 应用包含完整的错误处理和日志记录
+- 前端有友好的错误提示界面
+- 后端API返回标准化的错误响应
+
+## 贡献
+
+欢迎提交Issue和Pull Request来改进这个项目。
+
+## 许可证
+
+MIT License

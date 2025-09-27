@@ -1,32 +1,218 @@
 <template>
   <div class="app-container">
-    <!-- 导航栏 -->
-    <nav class="navbar">
+    <!-- 全局历史记录面板 -->
+    <GlobalHistoryPanel />
+    
+    <!-- 导航栏 - 在聊天页面隐藏 -->
+    <nav class="navbar" v-show="!isChatPage">
       <div class="navbar-brand">
         <h1>AI角色扮演聊天</h1>
       </div>
       <div class="navbar-menu">
         <router-link to="/" class="nav-link">首页</router-link>
         <router-link to="/characters" class="nav-link">角色列表</router-link>
-        <router-link to="/settings" class="nav-link">设置</router-link>
+        <router-link v-if="isAdmin" to="/admin" class="nav-link admin-link">管理页面</router-link>
+        
+        <!-- 用户菜单区域 -->
+        <div class="navbar-user-section">
+          <!-- 未登录状态 -->
+          <div v-if="!isAuthenticated" class="auth-buttons">
+            <router-link to="/login" class="nav-link login-btn">登录</router-link>
+          </div>
+          
+          <!-- 已登录状态 -->
+          <div v-else class="user-menu" ref="userMenuRef">
+            <button class="user-avatar-btn" @click="toggleUserMenu">
+              <img :src="userAvatar" :alt="userDisplayName" class="user-avatar" />
+              <span class="user-name">{{ userDisplayName }}</span>
+              <span class="dropdown-arrow">▼</span>
+            </button>
+            
+            <!-- 下拉菜单 -->
+            <div v-if="showUserMenu" class="user-dropdown">
+              <div class="user-info">
+                <img :src="userAvatar" :alt="userDisplayName" class="dropdown-avatar" />
+                <div class="user-details">
+                  <div class="username">{{ userDisplayName }}</div>
+                  <div class="user-email">{{ currentUser.email || '未设置邮箱' }}</div>
+                </div>
+              </div>
+              
+              <div class="menu-divider"></div>
+              
+              <button class="menu-item" @click="openPersonalInfo">
+                <span class="menu-icon">👤</span>
+                <span>个人信息</span>
+              </button>
+              
+              <button class="menu-item" @click="openChatHistory">
+                <span class="menu-icon">💬</span>
+                <span>对话历史</span>
+              </button>
+              
+              <button class="menu-item logout-item" @click="handleLogout">
+                <span class="menu-icon">🚪</span>
+                <span>退出登录</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </nav>
 
     <!-- 主内容区 -->
     <main class="main-content">
-      <router-view />
+      <transition name="page" mode="out-in">
+        <router-view />
+      </transition>
     </main>
 
     <!-- 页脚 -->
     <footer class="footer">
       <p>&copy; 2025 AI角色扮演聊天 - 基于七牛云AI大模型</p>
     </footer>
+
+    <!-- 弹窗遮罩和内容 -->
+    <div v-if="showPersonalInfoModal || showChatHistoryModal" class="modal-backdrop" @click="closeModals">
+      <!-- 个人信息弹窗 -->
+      <PersonalInfoModal 
+        v-if="showPersonalInfoModal" 
+        @close="closeModals"
+        @click.stop
+      />
+      
+      <!-- 对话历史弹窗 -->
+      <ChatHistoryModal 
+        v-if="showChatHistoryModal" 
+        @close="closeModals"
+        @click.stop
+      />
+    </div>
   </div>
 </template>
 
 <script>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import GlobalHistoryPanel from './components/GlobalHistoryPanel.vue'
+import PersonalInfoModal from './components/PersonalInfoModal.vue'
+import ChatHistoryModal from './components/ChatHistoryModal.vue'
+import { useAuth } from './composables/useAuth.js'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    GlobalHistoryPanel,
+    PersonalInfoModal,
+    ChatHistoryModal
+  },
+  setup() {
+    const route = useRoute()
+    const { 
+      isAuthenticated, 
+      currentUser, 
+      userDisplayName, 
+      userAvatar,
+      isAdmin,
+      logout,
+      initAuth
+    } = useAuth()
+    
+    // 检测是否在聊天页面
+    const isChatPage = computed(() => {
+      return route.name === 'Chat'
+    })
+    
+    const showUserMenu = ref(false)
+    const userMenuRef = ref(null)
+    
+    // 弹窗状态
+    const showPersonalInfoModal = ref(false)
+    const showChatHistoryModal = ref(false)
+
+    // 切换用户菜单
+    const toggleUserMenu = () => {
+      showUserMenu.value = !showUserMenu.value
+    }
+
+    // 关闭用户菜单
+    const closeUserMenu = () => {
+      showUserMenu.value = false
+    }
+
+    // 处理登出
+    const handleLogout = async () => {
+      try {
+        await logout()
+        closeUserMenu()
+      } catch (error) {
+        console.error('登出失败:', error)
+      }
+    }
+
+    // 打开个人信息弹窗
+    const openPersonalInfo = () => {
+      closeUserMenu()
+      showPersonalInfoModal.value = true
+    }
+
+    // 打开对话历史弹窗
+    const openChatHistory = () => {
+      closeUserMenu()
+      showChatHistoryModal.value = true
+    }
+
+    // 关闭弹窗
+    const closeModals = () => {
+      showPersonalInfoModal.value = false
+      showChatHistoryModal.value = false
+    }
+
+    // 点击外部关闭菜单
+    const handleClickOutside = (event) => {
+      if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
+        closeUserMenu()
+      }
+    }
+
+    onMounted(() => {
+      document.addEventListener('click', handleClickOutside)
+      // 确保认证状态正确初始化
+      initAuth()
+    })
+
+    onUnmounted(() => {
+      document.removeEventListener('click', handleClickOutside)
+    })
+
+    return {
+      // 认证状态
+      isAuthenticated,
+      currentUser,
+      userDisplayName,
+      userAvatar,
+      isAdmin,
+      
+      // 页面状态
+      isChatPage,
+      
+      // 用户菜单状态
+      showUserMenu,
+      userMenuRef,
+      
+      // 弹窗状态
+      showPersonalInfoModal,
+      showChatHistoryModal,
+      
+      // 方法
+      toggleUserMenu,
+      closeUserMenu,
+      handleLogout,
+      openPersonalInfo,
+      openChatHistory,
+      closeModals
+    }
+  }
 }
 </script>
 
@@ -69,6 +255,9 @@ body {
   justify-content: space-between;
   align-items: center;
   height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .navbar-brand h1 {
@@ -78,7 +267,14 @@ body {
 
 .navbar-menu {
   display: flex;
+  align-items: center;
   gap: 20px;
+}
+
+.navbar-user-section {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
 }
 
 .nav-link {
@@ -95,6 +291,163 @@ body {
   color: var(--primary-color);
 }
 
+.nav-link.router-link-active {
+  color: var(--primary-color);
+  background-color: #f0f8ff;
+}
+
+.admin-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 登录按钮样式 */
+.login-btn {
+  background: var(--primary-color);
+  color: white !important;
+}
+
+.login-btn:hover {
+  background: #3a6fe6 !important;
+  color: white !important;
+}
+
+/* 用户菜单样式 */
+.user-menu {
+  position: relative;
+}
+
+.user-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.user-avatar-btn:hover {
+  background: #f5f5f5;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  color: #666;
+  transition: transform 0.2s;
+}
+
+.user-avatar-btn:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* 用户下拉菜单 */
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 250px;
+  z-index: 1000;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.user-info {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8f9fa;
+}
+
+.dropdown-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.username {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.user-email {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.menu-divider {
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #333;
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.9rem;
+}
+
+.menu-item:hover {
+  background: #f5f5f5;
+}
+
+.logout-item {
+  color: #dc3545;
+}
+
+.logout-item:hover {
+  background: #fee;
+}
+
+.menu-icon {
+  width: 16px;
+  text-align: center;
+}
+
 /* 主内容区样式 */
 .main-content {
   flex: 1;
@@ -102,6 +455,55 @@ body {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
+}
+
+/* 页面过渡效果 */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.4s ease;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* 弹窗样式 */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: backdropFadeIn 0.3s ease-out;
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+.page-enter-to,
+.page-leave-from {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* 页脚样式 */
@@ -126,10 +528,31 @@ body {
     margin-top: 10px;
     justify-content: center;
     flex-wrap: wrap;
+    width: 100%;
+  }
+  
+  .navbar-user-section {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+  
+  .user-dropdown {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
   }
   
   .main-content {
     padding: 10px;
+  }
+  
+  .page-enter-from,
+  .page-leave-to {
+    transform: translateY(20px);
+  }
+  
+  .page-leave-to {
+    transform: translateY(-20px);
   }
 }
 </style>
