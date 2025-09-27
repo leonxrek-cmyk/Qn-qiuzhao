@@ -8,8 +8,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import Config
 from routes.ai_service import AIService
-from log_service import LogService
-from session_service import SessionService
+from services.log_service import LogService
+from services.session_service import SessionService
 import json
 
 # 创建蓝图

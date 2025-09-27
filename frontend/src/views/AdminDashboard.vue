@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import AdminStatistics from '../components/admin/AdminStatistics.vue'
@@ -74,6 +74,11 @@ export default {
       }
       return true
     }
+
+    // 监听权限变化
+    watch([isAuthenticated, isAdmin], () => {
+      checkPermission()
+    }, { immediate: true })
 
     onMounted(() => {
       checkPermission()

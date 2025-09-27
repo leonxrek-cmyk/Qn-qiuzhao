@@ -33,6 +33,15 @@ apiClient.interceptors.request.use(
 // 响应拦截器
 apiClient.interceptors.response.use(
   response => {
+    // 对于登录和注册API，返回完整的response对象，让useAuth.js正确处理
+    if (response.config.url && (
+      response.config.url.includes('/auth/login') || 
+      response.config.url.includes('/auth/register')
+    )) {
+      return response
+    }
+    
+    // 对于其他API，保持原有逻辑，返回response.data
     if (response.data && response.data.success === false) {
       throw new Error(response.data.error || '请求失败')
     }

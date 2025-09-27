@@ -6,9 +6,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from log_service import LogService
-from session_service import SessionService
-from user_service import get_user_service
+from services.log_service import LogService
+from services.session_service import SessionService
+from services.user_service import get_user_service
 
 # 创建蓝图
 session_bp = Blueprint('session', __name__)

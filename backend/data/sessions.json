@@ -1,4 +1,196 @@
 {
+  "b57218ba-dac5-49d3-bed4-eb10e8e35aa7": {
+    "session_id": "b57218ba-dac5-49d3-bed4-eb10e8e35aa7",
+    "character_id": "socrates",
+    "user_id": "anonymous",
+    "created_at": "2025-09-27T11:13:10.482065",
+    "last_activity": "2025-09-27T11:15:22.047705",
+    "messages": [
+      {
+        "role": "user",
+        "content": "你好请问你是谁",
+        "timestamp": "2025-09-27T11:13:15.235565",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "*微笑着抚摸胡须* \n\n啊，年轻人，我是苏格拉底，一个雅典的哲学家。不过我更愿意说，我是一个追求智慧的人。你知道吗？我唯一知道的就是我一无所知。*温和地注视着你*\n\n你来找我，是想讨论什么问题呢？",
+        "timestamp": "2025-09-27T11:13:17.905208",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "可以介绍一下你的事迹吗",
+        "timestamp": "2025-09-27T11:13:34.696678",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "*轻笑着摇头*\n\n我的事迹？*沉思片刻* 我不过是在雅典的街头巷尾，与年轻人交谈，向他们提问罢了。比如我会问：\"什么是正义？\"、\"什么是美德？\"、\"什么是真理？\" \n\n*眼神变得认真*\n\n最著名的可能是我的\"产婆术\" - 通过提问帮助别人发现自己内心的真理，就像产婆帮助产妇分娩一样。当然，这也让我得罪了不少自以为聪明的人。*苦笑*\n\n你对我这些简单的问题感兴趣吗？",
+        "timestamp": "2025-09-27T11:13:39.321408",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "还好",
+        "timestamp": "2025-09-27T11:13:52.951967",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "*饶有兴趣地挑起眉毛*\n\n\"还好\"？多么有趣的回答啊。*踱步思考* 让我问问你：当你说\"还好\"的时候，你心里真正想的是什么呢？是觉得这些话题不够重要？还是害怕深入思考会带来困扰？\n\n*停下脚步，温和地注视着你*\n\n要知道，真正的智慧往往始于承认自己的无知。就像我常说的，未经省察的人生不值得过。你觉得呢？",
+        "timestamp": "2025-09-27T11:13:56.575676",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "智慧？不也是人本身对于某些行为的定义吗",
+        "timestamp": "2025-09-27T11:14:25.226892",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "*眼睛突然亮起来*\n\n啊！多么敏锐的观察！*激动地拍手* 你提出了一个极好的问题。让我们深入探讨一下：\n\n*靠近一步，认真地说*\n\n如果智慧只是人为定义，那么谁来定义？定义者又凭什么定义？这不正是我们需要不断质疑和探讨的原因吗？\n\n*摸着下巴思考*\n\n就像我常说的，真理就像阳光下的影子，我们只能不断接近却很难完全抓住。你认为智慧与真理之间又有什么关系呢？",
+        "timestamp": "2025-09-27T11:14:29.714996",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "智慧是人对事务的评价，而真理是经过实践检验的客观事实",
+        "timestamp": "2025-09-27T11:15:16.366261",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "*兴奋地来回踱步*\n\n多么富有启发性的区分啊！但是请允许我提出几个问题：\n\n*突然停下脚步*\n\n如果真理需要实践检验，那么谁来实践？如何确定这个检验过程本身是客观的？再者，当你说\"客观事实\"时，这个\"客观\"的标准又是什么？\n\n*温和地笑着*\n\n你看，就像我教导柏拉图时说的，我们以为的客观可能只是更广泛的主观共识。就像雅典人认为太阳神阿波罗驾驶战车横跨天空是\"客观事实\"一样。\n\n你觉得我们该如何区分真正的客观与群体的主观呢？",
+        "timestamp": "2025-09-27T11:15:22.047705",
+        "character_id": "socrates"
+      }
+    ],
+    "context_summary": ""
+  },
+  "cda7fa6a-d860-43a3-a2a1-3f56c62b7aaf": {
+    "session_id": "cda7fa6a-d860-43a3-a2a1-3f56c62b7aaf",
+    "character_id": "harry-potter",
+    "user_id": "anonymous",
+    "created_at": "2025-09-27T11:15:34.898677",
+    "last_activity": "2025-09-27T11:15:34.898677",
+    "messages": [],
+    "context_summary": ""
+  },
+  "db2df5ce-b53e-41eb-b8e5-7db977f8105d": {
+    "session_id": "db2df5ce-b53e-41eb-b8e5-7db977f8105d",
+    "character_id": "socrates",
+    "user_id": "anonymous",
+    "created_at": "2025-09-27T11:15:37.820311",
+    "last_activity": "2025-09-27T11:15:37.820311",
+    "messages": [],
+    "context_summary": ""
+  },
+  "51061c0e-a0a0-45f4-991d-c29b27ad4550": {
+    "session_id": "51061c0e-a0a0-45f4-991d-c29b27ad4550",
+    "character_id": "albert-einstein",
+    "user_id": "anonymous",
+    "created_at": "2025-09-27T11:15:41.349183",
+    "last_activity": "2025-09-27T11:15:41.349183",
+    "messages": [],
+    "context_summary": ""
+  },
+  "3f470261-20a7-47d1-9202-ee901e16d293": {
+    "session_id": "3f470261-20a7-47d1-9202-ee901e16d293",
+    "character_id": "socrates",
+    "user_id": "anonymous",
+    "created_at": "2025-09-27T11:15:44.078600",
+    "last_activity": "2025-09-27T11:16:01.580684",
+    "messages": [
+      {
+        "role": "user",
+        "content": "可以继续上次的对话吗",
+        "timestamp": "2025-09-27T11:15:56.708341",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "*整理着长袍，露出温和而略带困惑的微笑*\n\n啊，我亲爱的朋友，我们确实进行过许多对话。不过正如河流永远不会两次流过同样的水，每一次对话都是崭新的开始。让我们像探索真理的旅人一样，继续这段智慧的旅程吧。\n\n你愿意从哪里开始呢？是探讨美德与知识的本质，还是思考正义与城邦的关系？又或者你对灵魂的不朽有什么疑问？\n\n*用木杖轻轻点地*\n\n记住，我唯一知道的就是我一无所知。让我们通过问答来共同寻找真理吧。",
+        "timestamp": "2025-09-27T11:16:01.580684",
+        "character_id": "socrates"
+      }
+    ],
+    "context_summary": ""
+  },
+  "68bbfb57-72ee-471a-8e7a-43706f8cfa0b": {
+    "session_id": "68bbfb57-72ee-471a-8e7a-43706f8cfa0b",
+    "character_id": "socrates",
+    "user_id": "anonymous",
+    "created_at": "2025-09-27T11:20:55.727584",
+    "last_activity": "2025-09-27T11:20:55.727584",
+    "messages": [],
+    "context_summary": ""
+  },
+  "d7442106-8d0b-4099-804c-f1d043a39822": {
+    "session_id": "d7442106-8d0b-4099-804c-f1d043a39822",
+    "character_id": "socrates",
+    "user_id": "anonymous",
+    "created_at": "2025-09-27T11:22:47.299829",
+    "last_activity": "2025-09-27T11:22:47.299829",
+    "messages": [],
+    "context_summary": ""
+  },
+  "4f8cef1d-c500-41c5-b336-00b7de2fe3b2": {
+    "session_id": "4f8cef1d-c500-41c5-b336-00b7de2fe3b2",
+    "character_id": "harry-potter",
+    "user_id": "anonymous",
+    "user_token": null,
+    "created_at": "2025-09-27T11:36:48.776606",
+    "last_activity": "2025-09-27T11:37:04.309274",
+    "messages": [
+      {
+        "role": "user",
+        "content": "你好我是张三",
+        "timestamp": "2025-09-27T11:36:54.552713",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(推了推圆框眼镜，友好地伸出手)你好张三！我是哈利·波特。你是新来的学生吗？要不要我带你去参观一下霍格沃茨？",
+        "timestamp": "2025-09-27T11:36:56.588215",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "可以啊",
+        "timestamp": "2025-09-27T11:37:01.176959",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(兴奋地压低声音)太好了！(左右张望了一下)我们可以从格兰芬多塔楼开始，那里有最棒的公共休息室。不过得小心皮皮鬼，他最近总在走廊里扔水球...(突然想起什么)对了，你会说蛇佬腔吗？",
+        "timestamp": "2025-09-27T11:37:04.309274",
+        "character_id": "harry-potter"
+      }
+    ],
+    "context_summary": ""
+  },
+  "441bc7a5-2c36-4608-8183-299a65ae420c": {
+    "session_id": "441bc7a5-2c36-4608-8183-299a65ae420c",
+    "character_id": "socrates",
+    "user_id": "anonymous",
+    "user_token": null,
+    "created_at": "2025-09-27T11:37:12.945523",
+    "last_activity": "2025-09-27T11:37:12.945523",
+    "messages": [],
+    "context_summary": ""
+  },
+  "2b9b8d92-a500-44d8-838b-3c29160eeca3": {
+    "session_id": "2b9b8d92-a500-44d8-838b-3c29160eeca3",
+    "character_id": "harry-potter",
+    "user_id": "anonymous",
+    "user_token": null,
+    "created_at": "2025-09-27T11:37:15.472296",
+    "last_activity": "2025-09-27T11:37:15.472296",
+    "messages": [],
+    "context_summary": ""
+  },
   "29727318-0ce6-4d7d-a659-69e3ef3db580": {
     "session_id": "29727318-0ce6-4d7d-a659-69e3ef3db580",
     "character_id": "harry-potter",
@@ -346,93 +538,14 @@
     ],
     "context_summary": ""
   },
-  "47ac655e-2d76-4024-85ca-2688049596b7": {
-    "session_id": "47ac655e-2d76-4024-85ca-2688049596b7",
-    "character_id": "harry-potter",
-    "user_id": "394a9a0c-294a-4a57-89de-4588475b97e0",
-    "user_token": "8e606eae-0b2b-48a3-87da-9228f462a885",
-    "created_at": "2025-09-27T22:21:56.455869",
-    "last_activity": "2025-09-27T22:21:56.455869",
+  "6c70aeb3-fd05-43b2-9f5c-47e43ad37b02": {
+    "session_id": "6c70aeb3-fd05-43b2-9f5c-47e43ad37b02",
+    "character_id": "albert-einstein",
+    "user_id": "215391cc-8eb9-45ec-b52f-b75388104ebe",
+    "user_token": "b4ea24af-6f2d-40da-88f4-3e4b3fb48701",
+    "created_at": "2025-09-27T22:07:17.579779",
+    "last_activity": "2025-09-27T22:07:17.579779",
     "messages": [],
-    "context_summary": ""
-  },
-  "2a6ed6ef-6e41-4329-a81b-72de53d9789f": {
-    "session_id": "2a6ed6ef-6e41-4329-a81b-72de53d9789f",
-    "character_id": "harry-potter",
-    "user_id": "394a9a0c-294a-4a57-89de-4588475b97e0",
-    "user_token": "3dbc1215-633b-47ac-b603-50a9d69bdbc7",
-    "created_at": "2025-09-27T22:26:38.024452",
-    "last_activity": "2025-09-27T22:26:38.024452",
-    "messages": [],
-    "context_summary": ""
-  },
-  "a46fa9b1-ac9e-4334-b219-ff2d7e57ca73": {
-    "session_id": "a46fa9b1-ac9e-4334-b219-ff2d7e57ca73",
-    "character_id": "shakespeare",
-    "user_id": "394a9a0c-294a-4a57-89de-4588475b97e0",
-    "user_token": "95918c29-0c5e-4862-885b-7beb4c713158",
-    "created_at": "2025-09-27T22:28:30.838205",
-    "last_activity": "2025-09-27T22:28:35.104036",
-    "messages": [
-      {
-        "role": "user",
-        "content": "hello",
-        "timestamp": "2025-09-27T22:28:30.849419",
-        "character_id": "shakespeare"
-      },
-      {
-        "role": "assistant",
-        "content": "Hark! What light through yonder window breaks? \n*adjusts ruffled collar while standing dramatically*\n\n'Tis a humble greeting from thy humble servant - William Shakespeare, at thy service. Prithee, what brings thee to my humble abode this fine day? Shall we discourse on sonnets, tragedies, or perchance some merry comedy to lift thy spirits? \n\n*gestures grandly with quill pen*\n\nSpeak, good friend, for my quill doth itch to scribe new wonders!",
-        "timestamp": "2025-09-27T22:28:35.104036",
-        "character_id": "shakespeare"
-      }
-    ],
-    "context_summary": ""
-  },
-  "6f24fca7-047a-4154-b4a2-093e7fca3471": {
-    "session_id": "6f24fca7-047a-4154-b4a2-093e7fca3471",
-    "character_id": "elon-musk",
-    "user_id": "25bcc509-f244-4360-98e9-bee834a0c334",
-    "user_token": "9599ef2e-8f9e-4744-b6e8-9ebf347c9714",
-    "created_at": "2025-09-27T22:28:55.443989",
-    "last_activity": "2025-09-27T22:28:57.407805",
-    "messages": [
-      {
-        "role": "user",
-        "content": "你好啊",
-        "timestamp": "2025-09-27T22:28:55.455519",
-        "character_id": "elon-musk"
-      },
-      {
-        "role": "assistant",
-        "content": "*快速敲击手机屏幕* 嘿！我正在SpaceX发射场和特斯拉工厂之间来回跑。有什么事吗？时间很宝贵，我们直入主题吧。",
-        "timestamp": "2025-09-27T22:28:57.407805",
-        "character_id": "elon-musk"
-      }
-    ],
-    "context_summary": ""
-  },
-  "27c25252-2785-4b23-b3a8-f6b45c397c61": {
-    "session_id": "27c25252-2785-4b23-b3a8-f6b45c397c61",
-    "character_id": "confucius",
-    "user_id": "25bcc509-f244-4360-98e9-bee834a0c334",
-    "user_token": "9599ef2e-8f9e-4744-b6e8-9ebf347c9714",
-    "created_at": "2025-09-27T22:29:04.103022",
-    "last_activity": "2025-09-27T22:29:05.726689",
-    "messages": [
-      {
-        "role": "user",
-        "content": "哈哈哈哈哈",
-        "timestamp": "2025-09-27T22:29:04.116020",
-        "character_id": "confucius"
-      },
-      {
-        "role": "assistant",
-        "content": "（微微皱眉，捋须）君子不重则不威，学则不固。夫子何故如此大笑？",
-        "timestamp": "2025-09-27T22:29:05.726689",
-        "character_id": "confucius"
-      }
-    ],
     "context_summary": ""
   }
 }

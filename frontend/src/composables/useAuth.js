@@ -57,18 +57,32 @@ export function useAuth() {
     isLoading.value = true
     try {
       const response = await apiService.login(username, password)
-      if (response.success) {
-        localStorage.setItem('auth_token', response.token)
-        localStorage.setItem('user_info', JSON.stringify(response.user))
-        Object.assign(currentUser, response.user)
+      const data = response.data
+      
+      if (data.success) {
+        localStorage.setItem('auth_token', data.token)
+        localStorage.setItem('user_info', JSON.stringify(data.user))
+        Object.assign(currentUser, data.user)
         isAuthenticated.value = true
         return { success: true }
       } else {
-        return { success: false, error: response.error }
+        // 后端返回的具体错误信息
+        return { success: false, error: data.error }
       }
     } catch (error) {
       console.error('登录失败:', error)
-      return { success: false, error: '登录失败，请检查网络连接' }
+      // 检查是否是网络错误
+      if (error.response && error.response.data) {
+        // 服务器返回了错误响应，提取具体错误信息
+        const errorData = error.response.data
+        return { success: false, error: errorData.error || '登录失败' }
+      } else if (error.request) {
+        // 请求发出但没有收到响应
+        return { success: false, error: '无法连接到服务器，请检查网络连接' }
+      } else {
+        // 其他错误
+        return { success: false, error: '登录失败，请稍后重试' }
+      }
     } finally {
       isLoading.value = false
     }
@@ -89,7 +103,7 @@ export function useAuth() {
   }
 
   // 登出
-  const logout = async () => {
+  const logout = async (router = null) => {
     try {
       await apiService.logout()
     } catch (error) {
@@ -103,9 +117,18 @@ export function useAuth() {
         username: null,
         email: null,
         avatar: null,
+        is_admin: false,
         settings: {}
       })
       isAuthenticated.value = false
+      
+      // 如果提供了router且当前在管理页面，跳转到首页
+      if (router) {
+        const currentRoute = router.currentRoute.value
+        if (currentRoute.name === 'Admin') {
+          router.push('/')
+        }
+      }
     }
   }
 

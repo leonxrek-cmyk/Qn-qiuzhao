@@ -6,8 +6,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from log_service import LogService
-from user_service import get_user_service
+from services.log_service import LogService
+from services.user_service import get_user_service
 from .avatar_service import create_user_avatar
 
 # 创建蓝图
@@ -123,11 +123,12 @@ def login():
             
             LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
                          log_level='Info', message=f'用户登录成功: {username}')
+            return jsonify(result), 200
         else:
             LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
                          log_level='Warning', message=f'用户登录失败: {username} - {result["error"]}')
-        
-        return jsonify(result)
+            # 登录失败时返回401状态码
+            return jsonify(result), 401
         
     except Exception as e:
         LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 

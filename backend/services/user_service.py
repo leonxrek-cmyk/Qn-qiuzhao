@@ -12,7 +12,7 @@ class UserService:
     def __init__(self):
         self.users: Dict[str, Dict[str, Any]] = {}
         self.user_sessions: Dict[str, str] = {}  # session_token -> user_id
-        self.data_file = os.path.join(os.path.dirname(__file__), 'users.json')
+        self.data_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'users.json')
         self.load_users()
         self.ensure_admin_user()  # 确保管理员账户存在
 
@@ -76,6 +76,33 @@ class UserService:
             }
             self.save_users()
             print(f"管理员账户已创建: {admin_username}")
+        
+        # 确保测试用户存在
+        test_username = '123'
+        test_password = '123456'
+        
+        if test_username not in self.users:
+            # 创建测试用户
+            user_id = str(uuid.uuid4())
+            self.users[test_username] = {
+                'id': user_id,
+                'username': test_username,
+                'password': self._hash_password(test_password),
+                'email': 'test@example.com',
+                'nickname': '测试用户',
+                'avatar': None,
+                'is_admin': False,
+                'created_at': datetime.datetime.now().isoformat(),
+                'chat_history': {},
+                'settings': {
+                    'theme': 'light',
+                    'language': 'zh-CN',
+                    'notifications': True,
+                    'auto_play_voice': False
+                }
+            }
+            self.save_users()
+            print(f"测试用户已创建: {test_username}")
 
     def is_admin_user(self, token: str) -> bool:
         """检查用户是否为管理员"""
@@ -219,9 +246,16 @@ class UserService:
                 return {
                     'id': user_data['id'],
                     'username': user_data['username'],
-                    'email': user_data['email'],
-                    'avatar': user_data['avatar'],
-                    'settings': user_data['settings']
+                    'email': user_data.get('email', ''),
+                    'nickname': user_data.get('nickname', user_data['username']),
+                    'avatar': user_data.get('avatar'),
+                    'is_admin': user_data.get('is_admin', False),
+                    'settings': user_data.get('settings', {
+                        'theme': 'light',
+                        'language': 'zh-CN',
+                        'notifications': True,
+                        'auto_play_voice': False
+                    })
                 }
         return None
 
