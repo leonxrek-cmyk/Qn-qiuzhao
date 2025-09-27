@@ -2,9 +2,9 @@
 管理员路由
 """
 from flask import Blueprint, request, jsonify
-from log_service import LogService
-from user_service import get_user_service
-from session_service import SessionService
+from services.log_service import LogService
+from services.user_service import get_user_service
+from services.session_service import SessionService
 import json
 import os
 from datetime import datetime, timedelta
@@ -340,13 +340,64 @@ def get_statistics():
         configs = load_character_configs()
         total_characters = len(configs)
         
-        # 获取会话统计（简化版本，实际应该从数据库获取）
+        # 获取会话统计
+        all_sessions = session_service.get_all_sessions()
         total_messages = 0
         today_messages = 0
-        popular_characters = []
+        character_stats = {}
         
-        # 这里应该实现真实的统计逻辑
-        # 目前返回模拟数据
+        # 计算今天的日期
+        from datetime import datetime, timedelta
+        today = datetime.now().date()
+        
+        for session_id, session_data in all_sessions.items():
+            # 统计消息数量
+            messages = session_data.get('messages', [])
+            total_messages += len(messages)
+            
+            # 统计今日消息
+            for message in messages:
+                try:
+                    message_date = datetime.fromisoformat(message.get('timestamp', '')).date()
+                    if message_date == today:
+                        today_messages += 1
+                except:
+                    pass
+            
+            # 统计角色使用情况
+            character_id = session_data.get('character_id', 'unknown')
+            if character_id not in character_stats:
+                character_stats[character_id] = {
+                    'messageCount': 0,
+                    'userCount': set(),
+                    'sessionCount': 0
+                }
+            
+            character_stats[character_id]['messageCount'] += len(messages)
+            character_stats[character_id]['sessionCount'] += 1
+            user_id = session_data.get('user_id')
+            if user_id:
+                character_stats[character_id]['userCount'].add(user_id)
+        
+        # 生成热门角色列表
+        popular_characters = []
+        for character_id, stats in character_stats.items():
+            if character_id in configs:
+                character_config = configs[character_id]
+                popular_characters.append({
+                    'id': character_id,
+                    'name': character_config.get('name', character_id),
+                    'description': character_config.get('description', ''),
+                    'avatar': character_config.get('avatar', f'/avatars/{character_id}.png'),
+                    'messageCount': stats['messageCount'],
+                    'userCount': len(stats['userCount']),
+                    'sessionCount': stats['sessionCount']
+                })
+        
+        # 按消息数量排序
+        popular_characters.sort(key=lambda x: x['messageCount'], reverse=True)
+        popular_characters = popular_characters[:10]  # 取前10个
+        
         statistics = {
             'totalMessages': total_messages,
             'totalUsers': total_users,
@@ -356,7 +407,7 @@ def get_statistics():
         }
         
         LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
-                      log_level='Info', message='管理员获取统计数据')
+                      log_level='Info', message=f'管理员获取统计数据: 用户{total_users}个, 角色{total_characters}个, 消息{total_messages}条')
         
         return jsonify({'success': True, 'data': statistics})
         

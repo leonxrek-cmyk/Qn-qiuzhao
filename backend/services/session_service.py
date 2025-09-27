@@ -17,7 +17,7 @@ class SessionService:
         self.session_timeout = 3600 * 24  # 会话超时时间（24小时）
         
         # 会话存储文件路径（可选的持久化存储）
-        self.sessions_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sessions.json')
+        self.sessions_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'sessions.json')
         
         # 加载已有会话（如果存在）
         self._load_sessions()
@@ -171,10 +171,20 @@ class SessionService:
     def clear_all_user_sessions(self, user_token: str) -> bool:
         """清空用户的所有会话"""
         try:
+            from .user_service import get_user_service
+            
+            # 获取用户ID
+            user_service = get_user_service()
+            user = user_service.get_user_by_token(user_token)
+            if not user:
+                return False
+            
+            user_id = user['id']
+            
             # 找到属于该用户的所有会话
             user_sessions = []
             for session_id, session_data in self.sessions.items():
-                if session_data.get('user_token') == user_token:
+                if session_data.get('user_id') == user_id:
                     user_sessions.append(session_id)
             
             # 删除所有用户会话
@@ -190,6 +200,10 @@ class SessionService:
         except Exception as e:
             print(f"[SessionService]: 清空用户会话失败: {str(e)}")
             return False
+
+    def get_all_sessions(self) -> Dict[str, Dict]:
+        """获取所有会话数据（用于统计）"""
+        return self.sessions.copy()
     
     def cleanup_expired_sessions(self):
         """清理过期的会话"""
@@ -238,11 +252,20 @@ class SessionService:
     
     def get_user_sessions(self, user_token: str, character_id: str = None) -> List[Dict]:
         """获取用户的会话列表"""
+        from .user_service import get_user_service
+        
+        # 获取用户ID
+        user_service = get_user_service()
+        user = user_service.get_user_by_token(user_token)
+        if not user:
+            return []
+        
+        user_id = user['id']
         user_sessions = []
         
         for session_id, session in self.sessions.items():
-            # 检查是否是该用户的会话
-            if session.get('user_token') != user_token:
+            # 检查是否是该用户的会话（使用user_id而不是user_token）
+            if session.get('user_id') != user_id:
                 continue
             
             # 如果指定了角色ID，只返回该角色的会话

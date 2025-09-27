@@ -1,0 +1,227 @@
+{
+  "records": {
+    "ee467a3b-c40d-4e6a-b930-e67665ce49f0": {
+      "id": "ee467a3b-c40d-4e6a-b930-e67665ce49f0",
+      "user_id": "user-123",
+      "character_id": "confucius",
+      "character_name": "confucius",
+      "session_id": "session-001",
+      "description": "与confucius的对话",
+      "message_count": 0,
+      "created_at": "2025-09-27T20:56:03.955258",
+      "updated_at": "2025-09-27T20:56:03.955260",
+      "last_activity": "2025-09-27T20:56:03.955261",
+      "status": "active"
+    },
+    "6e430f5b-a6fd-445e-8063-031d3e8eeeb0": {
+      "id": "6e430f5b-a6fd-445e-8063-031d3e8eeeb0",
+      "user_id": "user-123",
+      "character_id": "einstein",
+      "character_name": "einstein",
+      "session_id": "session-002",
+      "description": "与einstein的对话",
+      "message_count": 0,
+      "created_at": "2025-09-27T20:56:03.956507",
+      "updated_at": "2025-09-27T20:56:03.956512",
+      "last_activity": "2025-09-27T20:56:03.956513",
+      "status": "active"
+    },
+    "f0402d06-5bc3-47ba-839d-6e9f61024923": {
+      "id": "f0402d06-5bc3-47ba-839d-6e9f61024923",
+      "user_id": "21bcddcf-24b1-4bc0-b3aa-0b8dc8cb2ea4",
+      "character_id": "albert-einstein",
+      "character_name": "albert-einstein",
+      "session_id": "47fe98e4-fe83-4f18-aa7b-72ee0ded94cc",
+      "description": "与albert-einstein的对话",
+      "message_count": 0,
+      "created_at": "2025-09-27T20:56:03.957045",
+      "updated_at": "2025-09-27T20:56:03.957047",
+      "last_activity": "2025-09-27T20:56:03.957048",
+      "status": "active"
+    },
+    "e3b4153a-4c09-4eb3-971f-7b1707f94845": {
+      "id": "e3b4153a-4c09-4eb3-971f-7b1707f94845",
+      "user_id": "admin-001",
+      "character_id": "harry-potter",
+      "character_name": "harry-potter",
+      "session_id": "e8648366-2d1e-41ea-b7fa-0c402f42fc02",
+      "description": "与harry-potter的对话",
+      "message_count": 6,
+      "created_at": "2025-09-27T20:57:22.295362",
+      "updated_at": "2025-09-27T20:58:10.646538",
+      "last_activity": "2025-09-27T20:58:10.646538",
+      "status": "active"
+    },
+    "8e9841c7-f8e6-485c-b80d-7040d5b68e11": {
+      "id": "8e9841c7-f8e6-485c-b80d-7040d5b68e11",
+      "user_id": "admin-001",
+      "character_id": "albert-einstein",
+      "character_name": "albert-einstein",
+      "session_id": "e8b1fb6a-f167-4471-b6fa-f4070025da32",
+      "description": "与albert-einstein的对话",
+      "message_count": 2,
+      "created_at": "2025-09-27T20:57:46.708637",
+      "updated_at": "2025-09-27T20:57:53.717463",
+      "last_activity": "2025-09-27T20:57:53.717463",
+      "status": "active"
+    },
+    "de0edb91-f8dc-4ce7-9abe-95d112c71368": {
+      "id": "de0edb91-f8dc-4ce7-9abe-95d112c71368",
+      "user_id": "21bcddcf-24b1-4bc0-b3aa-0b8dc8cb2ea4",
+      "character_id": "marie-curie",
+      "character_name": "marie-curie",
+      "session_id": "12d9cd04-b79c-45b4-9528-444d1c7bd2ca",
+      "description": "与marie-curie的对话",
+      "message_count": 6,
+      "created_at": "2025-09-27T20:59:29.998721",
+      "updated_at": "2025-09-27T20:59:50.763211",
+      "last_activity": "2025-09-27T20:59:50.763211",
+      "status": "active"
+    },
+    "eb80fbbb-cccf-4b66-b99b-a807dee10ba3": {
+      "id": "eb80fbbb-cccf-4b66-b99b-a807dee10ba3",
+      "user_id": "21bcddcf-24b1-4bc0-b3aa-0b8dc8cb2ea4",
+      "character_id": "elon-musk",
+      "character_name": "elon-musk",
+      "session_id": "b2d108a7-c7d3-4e85-9634-73219448baf9",
+      "description": "与elon-musk的对话",
+      "message_count": 2,
+      "created_at": "2025-09-27T21:00:15.172894",
+      "updated_at": "2025-09-27T21:00:21.998927",
+      "last_activity": "2025-09-27T21:00:21.998927",
+      "status": "active"
+    },
+    "85c9f783-00a0-4eb5-ae40-12c70435ba30": {
+      "id": "85c9f783-00a0-4eb5-ae40-12c70435ba30",
+      "user_id": "admin-001",
+      "character_id": "socrates",
+      "character_name": "socrates",
+      "session_id": "fd0dedd2-b8a7-4b77-8de1-a612217fcc06",
+      "description": "与socrates的对话",
+      "message_count": 2,
+      "created_at": "2025-09-27T21:05:55.613019",
+      "updated_at": "2025-09-27T21:05:58.341903",
+      "last_activity": "2025-09-27T21:05:58.341903",
+      "status": "active"
+    },
+    "94f2a3e5-2871-400a-9c0b-782d0ac8820d": {
+      "id": "94f2a3e5-2871-400a-9c0b-782d0ac8820d",
+      "user_id": "admin-001",
+      "character_id": "marie-curie",
+      "character_name": "marie-curie",
+      "session_id": "61abc71e-d604-46a3-8fbd-d68b9fe536f0",
+      "description": "与marie-curie的对话",
+      "message_count": 2,
+      "created_at": "2025-09-27T21:06:06.689403",
+      "updated_at": "2025-09-27T21:06:08.805941",
+      "last_activity": "2025-09-27T21:06:08.805941",
+      "status": "active"
+    },
+    "28d3846e-6ef3-48d2-84e1-476b57b8214f": {
+      "id": "28d3846e-6ef3-48d2-84e1-476b57b8214f",
+      "user_id": "21bcddcf-24b1-4bc0-b3aa-0b8dc8cb2ea4",
+      "character_id": "mark-zuckerberg",
+      "character_name": "mark-zuckerberg",
+      "session_id": "7538c6fa-b70f-43d1-aa84-4182c921c2ac",
+      "description": "与mark-zuckerberg的对话",
+      "message_count": 2,
+      "created_at": "2025-09-27T21:10:41.511399",
+      "updated_at": "2025-09-27T21:10:45.097633",
+      "last_activity": "2025-09-27T21:10:45.097633",
+      "status": "active"
+    },
+    "1657e8eb-fc76-4213-9b88-433e8a2c363a": {
+      "id": "1657e8eb-fc76-4213-9b88-433e8a2c363a",
+      "user_id": "21bcddcf-24b1-4bc0-b3aa-0b8dc8cb2ea4",
+      "character_id": "jack-ma",
+      "character_name": "jack-ma",
+      "session_id": "9e27f1dd-8c0c-42b5-bcca-3ac60ef3e1f7",
+      "description": "与jack-ma的对话",
+      "message_count": 2,
+      "created_at": "2025-09-27T21:10:53.792002",
+      "updated_at": "2025-09-27T21:10:56.900851",
+      "last_activity": "2025-09-27T21:10:56.900851",
+      "status": "active"
+    },
+    "3deeae25-cf34-4bf0-8bc1-5b268d683c28": {
+      "id": "3deeae25-cf34-4bf0-8bc1-5b268d683c28",
+      "user_id": "user-123",
+      "character_id": "albert-einstein",
+      "character_name": "albert-einstein",
+      "session_id": "386c7f79-d0bc-4d5b-9e65-64ba929c24ce",
+      "description": "与albert-einstein的对话",
+      "message_count": 2,
+      "created_at": "2025-09-27T21:17:37.582371",
+      "updated_at": "2025-09-27T21:17:37.589663",
+      "last_activity": "2025-09-27T21:17:37.589663",
+      "status": "active"
+    }
+  },
+  "user_records": {
+    "user-123": [
+      "ee467a3b-c40d-4e6a-b930-e67665ce49f0",
+      "6e430f5b-a6fd-445e-8063-031d3e8eeeb0",
+      "3deeae25-cf34-4bf0-8bc1-5b268d683c28"
+    ],
+    "21bcddcf-24b1-4bc0-b3aa-0b8dc8cb2ea4": [
+      "f0402d06-5bc3-47ba-839d-6e9f61024923",
+      "de0edb91-f8dc-4ce7-9abe-95d112c71368",
+      "eb80fbbb-cccf-4b66-b99b-a807dee10ba3",
+      "28d3846e-6ef3-48d2-84e1-476b57b8214f",
+      "1657e8eb-fc76-4213-9b88-433e8a2c363a"
+    ],
+    "admin-001": [
+      "e3b4153a-4c09-4eb3-971f-7b1707f94845",
+      "8e9841c7-f8e6-485c-b80d-7040d5b68e11",
+      "85c9f783-00a0-4eb5-ae40-12c70435ba30",
+      "94f2a3e5-2871-400a-9c0b-782d0ac8820d"
+    ]
+  },
+  "character_records": {
+    "confucius": [
+      "ee467a3b-c40d-4e6a-b930-e67665ce49f0"
+    ],
+    "einstein": [
+      "6e430f5b-a6fd-445e-8063-031d3e8eeeb0"
+    ],
+    "albert-einstein": [
+      "f0402d06-5bc3-47ba-839d-6e9f61024923",
+      "8e9841c7-f8e6-485c-b80d-7040d5b68e11",
+      "3deeae25-cf34-4bf0-8bc1-5b268d683c28"
+    ],
+    "harry-potter": [
+      "e3b4153a-4c09-4eb3-971f-7b1707f94845"
+    ],
+    "marie-curie": [
+      "de0edb91-f8dc-4ce7-9abe-95d112c71368",
+      "94f2a3e5-2871-400a-9c0b-782d0ac8820d"
+    ],
+    "elon-musk": [
+      "eb80fbbb-cccf-4b66-b99b-a807dee10ba3"
+    ],
+    "socrates": [
+      "85c9f783-00a0-4eb5-ae40-12c70435ba30"
+    ],
+    "mark-zuckerberg": [
+      "28d3846e-6ef3-48d2-84e1-476b57b8214f"
+    ],
+    "jack-ma": [
+      "1657e8eb-fc76-4213-9b88-433e8a2c363a"
+    ]
+  },
+  "session_records": {
+    "session-001": "ee467a3b-c40d-4e6a-b930-e67665ce49f0",
+    "session-002": "6e430f5b-a6fd-445e-8063-031d3e8eeeb0",
+    "47fe98e4-fe83-4f18-aa7b-72ee0ded94cc": "f0402d06-5bc3-47ba-839d-6e9f61024923",
+    "e8648366-2d1e-41ea-b7fa-0c402f42fc02": "e3b4153a-4c09-4eb3-971f-7b1707f94845",
+    "e8b1fb6a-f167-4471-b6fa-f4070025da32": "8e9841c7-f8e6-485c-b80d-7040d5b68e11",
+    "12d9cd04-b79c-45b4-9528-444d1c7bd2ca": "de0edb91-f8dc-4ce7-9abe-95d112c71368",
+    "b2d108a7-c7d3-4e85-9634-73219448baf9": "eb80fbbb-cccf-4b66-b99b-a807dee10ba3",
+    "fd0dedd2-b8a7-4b77-8de1-a612217fcc06": "85c9f783-00a0-4eb5-ae40-12c70435ba30",
+    "61abc71e-d604-46a3-8fbd-d68b9fe536f0": "94f2a3e5-2871-400a-9c0b-782d0ac8820d",
+    "7538c6fa-b70f-43d1-aa84-4182c921c2ac": "28d3846e-6ef3-48d2-84e1-476b57b8214f",
+    "9e27f1dd-8c0c-42b5-bcca-3ac60ef3e1f7": "1657e8eb-fc76-4213-9b88-433e8a2c363a",
+    "386c7f79-d0bc-4d5b-9e65-64ba929c24ce": "3deeae25-cf34-4bf0-8bc1-5b268d683c28"
+  },
+  "last_updated": "2025-09-27T21:17:37.589663"
+}

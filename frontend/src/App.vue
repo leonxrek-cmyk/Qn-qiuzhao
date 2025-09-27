@@ -93,7 +93,7 @@
 
 <script>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import GlobalHistoryPanel from './components/GlobalHistoryPanel.vue'
 import PersonalInfoModal from './components/PersonalInfoModal.vue'
 import ChatHistoryModal from './components/ChatHistoryModal.vue'
@@ -108,6 +108,7 @@ export default {
   },
   setup() {
     const route = useRoute()
+    const router = useRouter()
     const { 
       isAuthenticated, 
       currentUser, 
@@ -143,7 +144,7 @@ export default {
     // 处理登出
     const handleLogout = async () => {
       try {
-        await logout()
+        await logout(router)
         closeUserMenu()
       } catch (error) {
         console.error('登出失败:', error)
