@@ -1,12 +1,5 @@
 # 🏗️ AI角色对话系统 - 架构设计文档
 
-## 📋 文档信息
-
-- **项目名称**: AI角色对话系统 (AI Character Chat System)
-- **文档版本**: v1.0
-- **创建日期**: 2024年
-- **最后更新**: 2024年
-
 ## 👥 团队分工
 
 ### 核心团队成员
@@ -631,30 +624,6 @@ class Config:
 - **错误处理**: 统一异常处理机制
 - **日志规范**: 结构化日志记录
 
-### Git工作流
-
-```mermaid
-gitgraph
-    commit id: "初始化项目"
-    branch feature/frontend
-    checkout feature/frontend
-    commit id: "前端基础框架"
-    commit id: "用户界面开发"
-    checkout main
-    merge feature/frontend
-    branch feature/backend
-    checkout feature/backend
-    commit id: "后端API开发"
-    commit id: "AI服务集成"
-    checkout main
-    merge feature/backend
-    branch bugfix/issues
-    checkout bugfix/issues
-    commit id: "Bug修复"
-    checkout main
-    merge bugfix/issues
-    commit id: "版本发布"
-```
 
 ## 📚 技术债务管理
 
@@ -683,8 +652,9 @@ gitgraph
 
 - **技术负责人**: 曹艺洋
 - **测试负责人**: 刘翔宇, 薛雅琪
-- **项目邮箱**: [project-email@example.com]
+- **项目邮箱**: [leonxrek@gmail.com]
 
 ---
 
 *本文档将随着项目发展持续更新维护*
+
