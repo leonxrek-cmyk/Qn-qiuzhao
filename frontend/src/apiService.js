@@ -434,6 +434,22 @@ export const apiService = {
         'Authorization': `Bearer ${token}`
       }
     })
+  },
+
+  // 亲密度相关API
+  // 获取指定角色的亲密度
+  async getIntimacy(characterId) {
+    return await apiClient.get(`/intimacy/${characterId}`)
+  },
+
+  // 增加指定角色的亲密度
+  async increaseIntimacy(characterId) {
+    return await apiClient.post(`/intimacy/${characterId}/increase`)
+  },
+
+  // 获取所有角色的亲密度
+  async getAllIntimacy() {
+    return await apiClient.get('/intimacy/all')
   }
 }
 

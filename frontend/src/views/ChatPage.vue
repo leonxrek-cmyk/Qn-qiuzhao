@@ -16,6 +16,16 @@
           <p>{{ currentCharacter?.description || '请从左侧选择一个角色或搜索角色' }}</p>
         </div>
       </div>
+      
+      <!-- 亲密度进度条 - 放在中间空白区域 -->
+      <div class="intimacy-section" v-if="currentCharacter && !isGuestMode && intimacyData">
+        <IntimacyBar 
+          :intimacy="parseInt(intimacyData.intimacy) || 0"
+          :level-progress="intimacyData.level_progress || {}"
+          ref="intimacyBar"
+        />
+      </div>
+      
       <div class="chat-actions">
         <button class="action-button" @click="clearChat">🗑️ 清空对话</button>
         <button class="action-button" @click="backToCharacters">👥 切换角色</button>
@@ -58,21 +68,49 @@
     <!-- 输入区域 -->
     <div class="chat-input-area">
       <div class="input-container">
-        <input
-          type="text"
-          v-model="userInput"
-          placeholder="输入消息..."
-          class="text-input"
-          @keyup.enter="sendMessage"
-          :disabled="!currentCharacter"
-        />
-        <button 
-          class="send-button" 
-          @click="sendMessage"
-          :disabled="!currentCharacter || !userInput.trim()"
-        >
-          发送
-        </button>
+        <!-- 语音输入模式 -->
+        <div v-if="isVoiceRecording" class="voice-input-container">
+          <div class="voice-wave-container">
+            <div class="voice-wave">
+              <div class="wave-bar" v-for="i in 20" :key="i" :style="{ animationDelay: i * 0.1 + 's' }"></div>
+            </div>
+            <span class="voice-status">正在录音...</span>
+          </div>
+          <button class="voice-stop-button" @click="stopVoiceRecording">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- 文本输入模式 -->
+        <template v-else>
+          <button 
+            class="voice-button" 
+            @click="startVoiceRecording"
+            :disabled="!currentCharacter"
+            title="语音输入"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C13.1 2 14 2.9 14 4V12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12V4C10 2.9 10.9 2 12 2ZM19 10V12C19 15.3 16.3 18 13 18V20H11V18C7.7 18 5 15.3 5 12V10H7V12C7 14.2 8.8 16 11 16H13C15.2 16 17 14.2 17 12V10H19Z"/>
+            </svg>
+          </button>
+          <input
+            type="text"
+            v-model="userInput"
+            placeholder="输入消息..."
+            class="text-input"
+            @keyup.enter="sendMessage"
+            :disabled="!currentCharacter"
+          />
+          <button 
+            class="send-button" 
+            @click="sendMessage"
+            :disabled="!currentCharacter || !userInput.trim()"
+          >
+            发送
+          </button>
+        </template>
       </div>
     </div>
   </div>
@@ -80,13 +118,15 @@
 
 <script>
 import MessageBubble from '../components/MessageBubble.vue'
+import IntimacyBar from '../components/IntimacyBar.vue'
 import apiService from '../apiService.js'
 import { useAuth } from '../composables/useAuth.js'
 
 export default {
   name: 'ChatPage',
   components: {
-    MessageBubble
+    MessageBubble,
+    IntimacyBar
   },
   setup() {
     const { isAuthenticated, isGuestMode } = useAuth()
@@ -104,10 +144,19 @@ export default {
       currentRequestId: null, // 当前请求ID，用于取消过期请求
       abortController: null, // 用于取消HTTP请求
       characterStates: {}, // 存储每个角色的状态（消息、会话ID、等待状态等）
+      intimacyData: null, // 亲密度数据
+      intimacyCache: {}, // 亲密度数据缓存，按角色ID存储
+      // 语音输入相关状态
+      isVoiceRecording: false, // 是否正在录音
+      mediaRecorder: null, // 媒体录制器
+      audioChunks: [], // 音频数据块
     }
   },
   async mounted() {
     await this.handleRouteChange()
+    
+    // 监听会话删除事件
+    window.addEventListener('sessionDeleted', this.handleSessionDeleted)
   },
   
   watch: {
@@ -121,6 +170,9 @@ export default {
   beforeUnmount() {
     // 组件销毁前取消所有请求
     this.cancelCurrentRequest()
+    
+    // 移除事件监听器
+    window.removeEventListener('sessionDeleted', this.handleSessionDeleted)
   },
   methods: {
     async handleRouteChange() {
@@ -301,6 +353,21 @@ export default {
         // 恢复或初始化角色状态
         this.restoreCharacterState(characterId)
         
+        // 如果没有历史消息且不是游客模式，尝试加载最新会话
+        if (this.messages.length === 0 && this.isAuthenticated && !this.isGuestMode) {
+          await this.loadLatestSession(characterId)
+        }
+        
+        // 加载亲密度数据（仅对已登录用户）
+        if (this.isAuthenticated && !this.isGuestMode) {
+          await this.loadIntimacyData(characterId)
+          
+          // 检查是否需要发送主动问候（相见恨晚10级和伯乐100级）
+          if (this.messages.length === 0 && this.intimacyData) {
+            await this.checkAndSendActiveGreeting()
+          }
+        }
+        
         this.hasLoadedCharacter = true
         
       } catch (error) {
@@ -437,6 +504,11 @@ export default {
         }
 
         this.messages.push(aiMessage)
+
+        // 处理亲密度更新（如果响应中包含亲密度信息）
+        if (response.intimacy && this.isAuthenticated && !this.isGuestMode) {
+          this.handleIntimacyUpdate(response.intimacy)
+        }
 
         // 保存更新后的状态
         this.saveCurrentCharacterState()
@@ -579,6 +651,36 @@ export default {
       }
     },
 
+    // 加载角色的最新会话
+    async loadLatestSession(characterId) {
+      // 游客模式下不加载会话
+      if (this.isGuestMode) {
+        console.log('游客模式：跳过最新会话加载')
+        return
+      }
+      
+      try {
+        // 获取该角色的所有会话
+        const response = await apiService.getUserSessions(characterId)
+        if (response.success && response.sessions.length > 0) {
+          // 按最后活动时间排序，获取最新的会话
+          const latestSession = response.sessions.sort((a, b) => 
+            new Date(b.last_activity || b.created_at) - new Date(a.last_activity || a.created_at)
+          )[0]
+          
+          console.log('找到最新会话:', latestSession.session_id)
+          
+          // 加载最新会话的消息
+          await this.loadSpecificSession(latestSession.session_id)
+        } else {
+          console.log('没有找到历史会话，保持空状态')
+        }
+      } catch (error) {
+        console.error('加载最新会话失败:', error)
+        // 失败时不做任何操作，保持空状态
+      }
+    },
+
     formatDate(dateString) {
       const date = new Date(dateString)
       const now = new Date()
@@ -599,6 +701,332 @@ export default {
         return diffDays + '天前'
       } else {
         return date.toLocaleDateString('zh-CN')
+      }
+    },
+
+    // 处理会话删除事件
+    handleSessionDeleted(event) {
+      const { characterId, sessionId } = event.detail
+      
+      // 清理内存中的角色状态缓存
+      if (this.characterStates[characterId]) {
+        const state = this.characterStates[characterId]
+        if (state.sessionId === sessionId) {
+          // 如果删除的是当前缓存的会话，清空该角色的状态
+          delete this.characterStates[characterId]
+          console.log('清理内存中的角色状态缓存:', characterId)
+          
+          // 如果当前正在查看被删除的会话，清空消息
+          if (this.currentCharacter && this.currentCharacter.id === characterId && this.currentSessionId === sessionId) {
+            this.messages = []
+            this.currentSessionId = null
+            console.log('清空当前显示的消息')
+          }
+        }
+      }
+    },
+
+    // 检查并发送主动问候
+    async checkAndSendActiveGreeting() {
+      if (!this.intimacyData || !this.currentCharacter) return
+      
+      const intimacyValue = this.intimacyData.value || 0
+      
+      // 相见恨晚（10级）或伯乐（100级）需要主动问候
+      if (intimacyValue >= 10) {
+        try {
+          console.log('发送主动问候，亲密度等级:', intimacyValue)
+          
+          // 创建一个特殊的"主动问候"请求
+          const greetingQuery = "【系统提示：这是角色的主动问候，请根据你们的亲密度等级主动向用户问好】"
+          
+          // 如果没有会话ID且用户已登录且不是游客模式，创建新会话
+          if (!this.currentSessionId && this.isAuthenticated && !this.isGuestMode) {
+            try {
+              const sessionResponse = await apiService.createSession(this.currentCharacter.id)
+              this.currentSessionId = sessionResponse.session_id
+              console.log('为主动问候创建新会话:', this.currentSessionId)
+            } catch (sessionError) {
+              console.error('创建会话失败:', sessionError)
+            }
+          }
+
+          let response
+          if (this.currentSessionId && !this.isGuestMode) {
+            // 使用会话上下文
+            response = await apiService.characterChatById(
+              this.currentCharacter.id,
+              greetingQuery,
+              'deepseek-v3',
+              false,
+              this.currentSessionId
+            )
+          } else {
+            // 不使用会话上下文
+            response = await apiService.characterChatById(
+              this.currentCharacter.id,
+              greetingQuery,
+              'deepseek-v3',
+              false
+            )
+          }
+
+          if (response && response.content) {
+            const greetingMessage = {
+              id: Date.now(),
+              content: response.content,
+              isUser: false,
+              timestamp: new Date().toLocaleTimeString(),
+              characterId: this.currentCharacter.id,
+              isActiveGreeting: true // 标记为主动问候
+            }
+
+            this.messages.push(greetingMessage)
+            
+            // 处理亲密度更新（如果响应中包含亲密度信息）
+            if (response.intimacy && this.isAuthenticated && !this.isGuestMode) {
+              this.handleIntimacyUpdate(response.intimacy)
+            }
+
+            // 保存状态
+            this.saveCurrentCharacterState()
+
+            // 滚动到底部
+            this.$nextTick(() => {
+              this.scrollToBottom()
+            })
+            
+            console.log('主动问候发送成功')
+          }
+        } catch (error) {
+          console.error('发送主动问候失败:', error)
+        }
+      }
+    },
+
+    // 加载亲密度数据
+    async loadIntimacyData(characterId) {
+      // 首先检查缓存
+      if (this.intimacyCache[characterId]) {
+        this.intimacyData = { ...this.intimacyCache[characterId] }
+        console.log('从缓存加载亲密度数据:', this.intimacyData)
+        return
+      }
+      
+      try {
+        const response = await apiService.getIntimacy(characterId)
+        if (response.success) {
+          const intimacyData = {
+            intimacy: response.intimacy,
+            level_progress: response.level_progress
+          }
+          
+          // 更新当前数据和缓存
+          this.intimacyData = intimacyData
+          this.intimacyCache[characterId] = { ...intimacyData }
+          
+          console.log('亲密度数据加载成功:', this.intimacyData)
+        } else {
+          console.error('亲密度API返回失败:', response)
+          // 只有在没有缓存和现有数据时才初始化为默认值
+          if (!this.intimacyCache[characterId] && !this.intimacyData) {
+            const defaultData = {
+              intimacy: 0,
+              level_progress: {
+                current_level: '陌生人',
+                next_level: '初次相识',
+                current_threshold: 0,
+                next_threshold: 1,
+                progress: 0
+              }
+            }
+            this.intimacyData = defaultData
+            this.intimacyCache[characterId] = { ...defaultData }
+          } else if (this.intimacyCache[characterId]) {
+            // 使用缓存数据
+            this.intimacyData = { ...this.intimacyCache[characterId] }
+          }
+        }
+      } catch (error) {
+        console.error('加载亲密度数据失败:', error)
+        
+        // 优先使用缓存数据
+        if (this.intimacyCache[characterId]) {
+          this.intimacyData = { ...this.intimacyCache[characterId] }
+          console.log('API失败，使用缓存亲密度数据:', this.intimacyData)
+        } else if (!this.intimacyData) {
+          // 只有在没有任何数据时才初始化为默认值
+          const defaultData = {
+            intimacy: 0,
+            level_progress: {
+              current_level: '陌生人',
+              next_level: '初次相识',
+              current_threshold: 0,
+              next_threshold: 1,
+              progress: 0
+            }
+          }
+          this.intimacyData = defaultData
+          this.intimacyCache[characterId] = { ...defaultData }
+          console.log('使用默认亲密度数据:', this.intimacyData)
+        }
+      }
+    },
+
+    // 处理亲密度更新
+    handleIntimacyUpdate(intimacyInfo) {
+      if (!this.intimacyData) return
+      
+      const oldIntimacy = this.intimacyData.intimacy
+      const newIntimacy = parseInt(intimacyInfo.value) || 0
+      
+      // 更新亲密度数据 - 不再重新加载，直接更新本地数据
+      const updatedIntimacyData = {
+        intimacy: newIntimacy,
+        level_progress: {
+          current_level: intimacyInfo.level_name,
+          next_level: this.getNextLevelName(newIntimacy),
+          current_threshold: this.getCurrentThreshold(newIntimacy),
+          next_threshold: this.getNextThreshold(newIntimacy),
+          progress: this.calculateLevelProgress(newIntimacy)
+        }
+      }
+      
+      this.intimacyData = updatedIntimacyData
+      
+      // 同时更新缓存
+      if (this.currentCharacter && this.currentCharacter.id) {
+        this.intimacyCache[this.currentCharacter.id] = { ...updatedIntimacyData }
+      }
+      
+      console.log('亲密度更新:', {
+        old: oldIntimacy,
+        new: newIntimacy,
+        level: intimacyInfo.level_name
+      })
+      
+      // 触发+1动画
+      if (this.$refs.intimacyBar && newIntimacy > oldIntimacy) {
+        this.$refs.intimacyBar.showPlusOneAnimation()
+        // 检查是否达到新阶段并触发爱心动画
+        this.$refs.intimacyBar.checkForThresholdReached(newIntimacy, oldIntimacy)
+      }
+      
+      // 如果等级提升，显示提示
+      if (intimacyInfo.level_up) {
+        console.log(`亲密度等级提升！从 ${intimacyInfo.old_level} 升级到 ${intimacyInfo.level_name}`)
+        // 可以在这里添加等级提升的提示或动画
+      }
+    },
+
+    // 获取下一个等级名称
+    getNextLevelName(intimacy) {
+      const levels = {
+        1: '初次相识',
+        5: '聊得火热', 
+        10: '相见恨晚',
+        20: '亲密无间',
+        50: '知音难觅',
+        100: '伯乐'
+      }
+      
+      const thresholds = Object.keys(levels).map(Number).sort((a, b) => a - b)
+      for (const threshold of thresholds) {
+        if (intimacy < threshold) {
+          return levels[threshold]
+        }
+      }
+      return '伯乐' // 已达到最高等级
+    },
+
+    // 获取当前阈值
+    getCurrentThreshold(intimacy) {
+      const thresholds = [0, 1, 5, 10, 20, 50, 100]
+      for (let i = thresholds.length - 1; i >= 0; i--) {
+        if (intimacy >= thresholds[i]) {
+          return thresholds[i]
+        }
+      }
+      return 0
+    },
+
+    // 获取下一个阈值
+    getNextThreshold(intimacy) {
+      const thresholds = [1, 5, 10, 20, 50, 100]
+      for (const threshold of thresholds) {
+        if (intimacy < threshold) {
+          return threshold
+        }
+      }
+      return 100 // 已达到最高等级
+    },
+
+    // 计算等级进度
+    calculateLevelProgress(intimacy) {
+      const currentThreshold = this.getCurrentThreshold(intimacy)
+      const nextThreshold = this.getNextThreshold(intimacy)
+      
+      if (intimacy >= 100) return 100
+      
+      const progress = ((intimacy - currentThreshold) / (nextThreshold - currentThreshold)) * 100
+      return Math.min(Math.max(progress, 0), 100)
+    },
+
+    // 开始语音录音
+    async startVoiceRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        this.mediaRecorder = new MediaRecorder(stream)
+        this.audioChunks = []
+        
+        this.mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            this.audioChunks.push(event.data)
+          }
+        }
+        
+        this.mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
+          this.processVoiceInput(audioBlob)
+          
+          // 停止所有音频轨道
+          stream.getTracks().forEach(track => track.stop())
+        }
+        
+        this.mediaRecorder.start()
+        this.isVoiceRecording = true
+        console.log('开始录音')
+      } catch (error) {
+        console.error('无法访问麦克风:', error)
+        alert('无法访问麦克风，请检查权限设置')
+      }
+    },
+
+    // 停止语音录音
+    stopVoiceRecording() {
+      if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+        this.mediaRecorder.stop()
+        this.isVoiceRecording = false
+        console.log('停止录音')
+      }
+    },
+
+    // 处理语音输入（目前只是模拟功能）
+    async processVoiceInput(audioBlob) {
+      try {
+        // 这里应该调用语音识别API，目前只是模拟
+        console.log('处理语音输入，音频大小:', audioBlob.size)
+        
+        // 模拟语音识别结果
+        const simulatedText = "这是模拟的语音识别结果"
+        this.userInput = simulatedText
+        
+        // 可以选择自动发送消息
+        // await this.sendMessage()
+        
+      } catch (error) {
+        console.error('处理语音输入失败:', error)
+        alert('语音处理失败，请重试')
       }
     }
   }
@@ -622,7 +1050,7 @@ export default {
 
 .chat-header {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   padding: 1rem 2rem;
   background: white;
@@ -632,10 +1060,11 @@ export default {
   position: relative;
   z-index: 10;
   gap: 1rem;
-  height: 100px; /* 增加头部高度，给角色信息更多空间 */
+  height: 100px; /* 恢复原来的高度 */
   min-height: 100px;
   max-height: 100px;
 }
+
 
 .character-info {
   display: flex;
@@ -723,6 +1152,16 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.4;
+}
+
+.intimacy-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 0.2rem;
+  flex: 1;
+  max-width: 550px;
+  min-width: 450px;
 }
 
 .chat-actions {
@@ -887,21 +1326,140 @@ export default {
   cursor: not-allowed;
 }
 
+/* 语音输入按钮样式 */
+.voice-button {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background-color: #28a745;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.voice-button:hover:not(:disabled) {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+.voice-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.voice-button svg {
+  color: white;
+}
+
+/* 语音输入容器样式 */
+.voice-input-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.voice-wave-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  padding: 0.75rem 1rem;
+  gap: 1rem;
+}
+
+.voice-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+}
+
+.wave-bar {
+  width: 3px;
+  background-color: white;
+  border-radius: 2px;
+  animation: wave 1.5s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+.wave-bar:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.wave-bar:nth-child(even) {
+  animation-delay: 0.3s;
+}
+
+@keyframes wave {
+  0%, 100% {
+    height: 8px;
+  }
+  50% {
+    height: 24px;
+  }
+}
+
+.voice-status {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.voice-stop-button {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background-color: #dc3545;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.voice-stop-button:hover {
+  background-color: #c82333;
+  transform: scale(1.05);
+}
+
+.voice-stop-button svg {
+  color: white;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .chat-header {
-    padding: 1rem;
     display: flex;
-    justify-content: space-between;
-    flex-direction: row;
-    gap: 1rem;
-    height: 120px; /* 小屏幕上给更多高度 */
-    min-height: 120px;
-    max-height: 120px;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.5rem;
+    height: auto;
+    min-height: auto;
+    max-height: none;
   }
   
   .character-info {
-    text-align: left;
+    justify-content: center;
+  }
+  
+  .chat-actions {
+    justify-content: center;
+  }
+  
+  .intimacy-section {
+    padding: 0 0.2rem;
+    max-width: 380px;
+    min-width: 350px;
+    margin: 0 auto;
   }
   
   .back-button {
@@ -920,7 +1478,7 @@ export default {
   
   .chat-messages {
     padding: 1rem;
-    max-height: calc(100vh - 200px); /* 小屏幕：头部120px + 输入80px */
+    max-height: calc(100vh - 200px); /* 移动端的头部高度 + 输入80px */
   }
   
   .chat-input-area {
@@ -928,12 +1486,30 @@ export default {
   }
   
   .input-container {
-    flex-direction: column;
-    gap: 0.75rem;
+    flex-direction: row;
+    gap: 0.5rem;
   }
   
   .text-input {
-    width: 100%;
+    flex: 1;
+  }
+  
+  .voice-button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .voice-stop-button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .voice-wave-container {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .voice-status {
+    font-size: 0.8rem;
   }
   
   .welcome-message {

@@ -51,6 +51,11 @@
                 <span>对话历史</span>
               </button>
               
+              <button v-if="!isGuestMode" class="menu-item" @click="openIntimacyRanking">
+                <span class="menu-icon">💖</span>
+                <span>亲密度排行</span>
+              </button>
+              
               <div v-if="isGuestMode" class="guest-notice">
                 <span class="menu-icon">ℹ️</span>
                 <span>游客模式 - 退出后数据将清除</span>
@@ -79,7 +84,7 @@
     </footer>
 
     <!-- 弹窗遮罩和内容 -->
-    <div v-if="showPersonalInfoModal || showChatHistoryModal" class="modal-backdrop" @click="closeModals">
+    <div v-if="showPersonalInfoModal || showChatHistoryModal || showIntimacyRankingModal" class="modal-backdrop" @click="closeModals">
       <!-- 个人信息弹窗 -->
       <PersonalInfoModal 
         v-if="showPersonalInfoModal" 
@@ -93,6 +98,13 @@
         @close="closeModals"
         @click.stop
       />
+      
+      <!-- 亲密度排行弹窗 -->
+      <IntimacyRankingModal 
+        v-if="showIntimacyRankingModal" 
+        @close="closeModals"
+        @click.stop
+      />
     </div>
   </div>
 </template>
@@ -103,6 +115,7 @@ import { useRoute, useRouter } from 'vue-router'
 import GlobalHistoryPanel from './components/GlobalHistoryPanel.vue'
 import PersonalInfoModal from './components/PersonalInfoModal.vue'
 import ChatHistoryModal from './components/ChatHistoryModal.vue'
+import IntimacyRankingModal from './components/IntimacyRankingModal.vue'
 import { useAuth } from './composables/useAuth.js'
 
 export default {
@@ -110,7 +123,8 @@ export default {
   components: {
     GlobalHistoryPanel,
     PersonalInfoModal,
-    ChatHistoryModal
+    ChatHistoryModal,
+    IntimacyRankingModal
   },
   setup() {
     const route = useRoute()
@@ -138,6 +152,7 @@ export default {
     // 弹窗状态
     const showPersonalInfoModal = ref(false)
     const showChatHistoryModal = ref(false)
+    const showIntimacyRankingModal = ref(false)
 
     // 切换用户菜单
     const toggleUserMenu = () => {
@@ -154,6 +169,8 @@ export default {
       try {
         await loginAsGuest()
         console.log('游客登录成功')
+        // 跳转到首页
+        router.push('/')
       } catch (error) {
         console.error('游客登录失败:', error)
       }
@@ -181,10 +198,17 @@ export default {
       showChatHistoryModal.value = true
     }
 
+    // 打开亲密度排行弹窗
+    const openIntimacyRanking = () => {
+      closeUserMenu()
+      showIntimacyRankingModal.value = true
+    }
+
     // 关闭弹窗
     const closeModals = () => {
       showPersonalInfoModal.value = false
       showChatHistoryModal.value = false
+      showIntimacyRankingModal.value = false
     }
 
     // 点击外部关闭菜单
@@ -223,6 +247,7 @@ export default {
       // 弹窗状态
       showPersonalInfoModal,
       showChatHistoryModal,
+      showIntimacyRankingModal,
       
       // 方法
       toggleUserMenu,
@@ -231,6 +256,7 @@ export default {
       handleLogout,
       openPersonalInfo,
       openChatHistory,
+      openIntimacyRanking,
       closeModals
     }
   }
@@ -259,6 +285,7 @@ body {
   line-height: 1.6;
   color: var(--text-color);
   background-color: var(--background-color);
+  overflow-x: hidden; /* 禁止整个页面的水平滚动 */
 }
 
 .app-container {

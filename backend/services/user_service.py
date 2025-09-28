@@ -12,7 +12,7 @@ class UserService:
     def __init__(self):
         self.users: Dict[str, Dict[str, Any]] = {}
         self.user_sessions: Dict[str, str] = {}  # session_token -> user_id
-        self.data_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'users.json')
+        self.data_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'users.json')
         self.load_users()
         self.ensure_admin_user()  # 确保管理员账户存在
 
@@ -258,6 +258,10 @@ class UserService:
                     })
                 }
         return None
+
+    def get_user_id_by_session(self, token: str) -> Optional[str]:
+        """通过会话令牌获取用户ID"""
+        return self.user_sessions.get(token)
 
     def update_user_settings(self, token: str, settings: Dict[str, Any]) -> Dict[str, Any]:
         """更新用户设置"""
