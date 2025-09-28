@@ -274,13 +274,14 @@ cd backend && gunicorn -w 4 -b 0.0.0.0:5000 app:app
 
 如有问题或建议，欢迎通过以下方式联系：
 
-- 📧 邮箱: [your-email@example.com]
-- 🐛 问题反馈: [GitHub Issues](https://github.com/your-repo/issues)
-- 💬 讨论交流: [GitHub Discussions](https://github.com/your-repo/discussions)
+- 📧 邮箱: [leonxrek@gmail.com]
+- 🐛 问题反馈: [GitHub Issues](https://github.com/leonxrek-cmyk/Qn-qiuzhao-DeepTalk/issues)
+- 💬 讨论交流: [GitHub Discussions](https://github.com/leonxrek-cmyk/Qn-qiuzhao-DeepTalk/discussions)
 
 ---
 
 ⭐ 如果这个项目对您有帮助，请给我们一个星标！
 
 🎬 **观看演示视频**: [https://www.bilibili.com/video/BV1EknZzaE9K/](https://www.bilibili.com/video/BV1EknZzaE9K/)
+
 
