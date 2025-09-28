@@ -191,6 +191,12 @@ export default {
           sessions = []
         }
         
+        // 检查是否有可导出的对话记录
+        if (sessions.length === 0) {
+          showMessage('暂无对话记录可导出', 'warning')
+          return
+        }
+        
         // 获取每个会话的详细消息内容
         const sessionsWithMessages = []
         let totalMessages = 0
@@ -348,11 +354,28 @@ export default {
 
     // 清空所有历史
     const clearAllHistory = async () => {
-      if (!confirm('确定要清空所有对话历史吗？此操作不可撤销。')) {
-        return
-      }
-      
       try {
+        // 先检查是否有历史记录
+        const response = await apiService.getUserSessions()
+        let sessions = []
+        if (response && response.success && Array.isArray(response.sessions)) {
+          sessions = response.sessions
+        } else if (Array.isArray(response)) {
+          sessions = response
+        } else {
+          sessions = []
+        }
+        
+        // 检查是否有可清空的对话记录
+        if (sessions.length === 0) {
+          showMessage('暂无对话记录可清空', 'warning')
+          return
+        }
+        
+        if (!confirm('确定要清空所有对话历史吗？此操作不可撤销。')) {
+          return
+        }
+        
         isClearing.value = true
         await apiService.clearAllHistory()
         await loadChatStats()
@@ -767,6 +790,12 @@ export default {
   background: #d1ecf1;
   color: #0c5460;
   border: 1px solid #bee5eb;
+}
+
+.message.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
 }
 
 /* 响应式设计 */

@@ -398,6 +398,12 @@ export default {
       try {
         const response = await apiService.getUserSessions()
         if (response.success) {
+          // 检查是否有可导出的对话记录
+          if (!response.sessions || response.sessions.length === 0) {
+            showMessage('暂无对话记录可导出', 'warning')
+            return
+          }
+          
           const dataStr = JSON.stringify(response.sessions, null, 2)
           const dataBlob = new Blob([dataStr], { type: 'application/json' })
           
@@ -407,6 +413,8 @@ export default {
           link.click()
           
           showMessage('对话历史导出成功', 'success')
+        } else {
+          showMessage('获取对话记录失败', 'error')
         }
       } catch (error) {
         console.error('导出对话历史失败:', error)
@@ -486,13 +494,30 @@ export default {
 
     // 清除所有对话历史
     const clearAllHistory = async () => {
-      if (!confirm('确定要清除所有对话历史吗？此操作不可恢复。')) {
-        return
-      }
-
-      isClearing.value = true
       try {
-        // 这里需要实现清除历史的API
+        // 先检查是否有历史记录
+        const response = await apiService.getUserSessions()
+        if (response.success) {
+          // 检查是否有可清空的对话记录
+          if (!response.sessions || response.sessions.length === 0) {
+            showMessage('暂无对话记录可清空', 'warning')
+            return
+          }
+        } else {
+          showMessage('获取对话记录失败', 'error')
+          return
+        }
+        
+        if (!confirm('确定要清除所有对话历史吗？此操作不可恢复。')) {
+          return
+        }
+
+        isClearing.value = true
+        
+        // 调用清除历史的API
+        await apiService.clearAllHistory()
+        
+        // 更新本地状态
         allHistorySessions.value = []
         totalSessions.value = 0
         totalMessages.value = 0
@@ -889,6 +914,12 @@ export default {
   background: #d1ecf1;
   color: #0c5460;
   border: 1px solid #bee5eb;
+}
+
+.message.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
 }
 
 /* 历史会话列表样式 */

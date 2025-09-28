@@ -299,53 +299,6 @@
     ],
     "context_summary": ""
   },
-  "da1058af-4e86-438f-a9fe-9c27af83eedf": {
-    "session_id": "da1058af-4e86-438f-a9fe-9c27af83eedf",
-    "character_id": "elon-musk",
-    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
-    "user_token": "56c743aa-833c-44b6-9a53-7db219a3e8c4",
-    "created_at": "2025-09-27T21:29:38.362004",
-    "last_activity": "2025-09-27T21:30:10.060421",
-    "messages": [
-      {
-        "role": "user",
-        "content": "hello,guys",
-        "timestamp": "2025-09-27T21:29:38.373177",
-        "character_id": "elon-musk"
-      },
-      {
-        "role": "assistant",
-        "content": "*adjusts microphone with a smirk*\n\nGreetings, Earthling. I'm currently multi-tasking between reviewing Starship schematics and neuralink trials, but I have exactly 47 seconds before my next hyperloop meeting. What's on your mind? \n\n*glances nervously at phone counting down*",
-        "timestamp": "2025-09-27T21:29:41.546887",
-        "character_id": "elon-musk"
-      },
-      {
-        "role": "user",
-        "content": "今天怎么样",
-        "timestamp": "2025-09-27T21:29:48.161703",
-        "character_id": "elon-musk"
-      },
-      {
-        "role": "assistant",
-        "content": "*rapidly typing with one hand while checking SpaceX launch data with the other*\n\nToday is... *checks watch* Mars time. Just successfully landed another Falcon 9 booster - that makes 147 recoveries. Also my AI team showed me a cat playing piano using Neuralink prototypes. \n\n*abruptly stands up* Wait - Tesla just hit a new production record in Shanghai. Must tweet about this immediately. \n\n*types furiously with both thumbs* There - sent. Now, what were we... ah yes, how's your day? Mine's moving at 1.21 gigawatts per second.",
-        "timestamp": "2025-09-27T21:29:53.491841",
-        "character_id": "elon-musk"
-      },
-      {
-        "role": "user",
-        "content": "用中文吧我看不懂英文",
-        "timestamp": "2025-09-27T21:30:04.457437",
-        "character_id": "elon-musk"
-      },
-      {
-        "role": "assistant",
-        "content": "*突然切换成略带口音的中文*\n\n啊，抱歉！我的中文还在改进中 - 主要是跟上海工厂的工程师学的。*查看手机上的翻译app*\n\n今天太忙了：SpaceX刚回收了火箭，特斯拉上海工厂产量破纪录，现在还要准备星舰的下次试飞。*突然激动* 对了，你有兴趣买特斯拉股票吗？或者考虑移民火星？\n\n*被助理打断* 噢等等，北京AI团队在找我开会... 30秒后必须走。还有什么问题？\n\n(注：马斯克实际中文水平有限，这里为角色设定需要)",
-        "timestamp": "2025-09-27T21:30:10.060421",
-        "character_id": "elon-musk"
-      }
-    ],
-    "context_summary": ""
-  },
   "47ac655e-2d76-4024-85ca-2688049596b7": {
     "session_id": "47ac655e-2d76-4024-85ca-2688049596b7",
     "character_id": "harry-potter",
@@ -431,6 +384,29 @@
         "content": "（微微皱眉，捋须）君子不重则不威，学则不固。夫子何故如此大笑？",
         "timestamp": "2025-09-27T22:29:05.726689",
         "character_id": "confucius"
+      }
+    ],
+    "context_summary": ""
+  },
+  "9ed174bc-b745-4315-babf-24a0def81911": {
+    "session_id": "9ed174bc-b745-4315-babf-24a0def81911",
+    "character_id": "bill-gates",
+    "user_id": "anonymous",
+    "user_token": null,
+    "created_at": "2025-09-28T09:14:45.656535",
+    "last_activity": "2025-09-28T09:14:49.347625",
+    "messages": [
+      {
+        "role": "user",
+        "content": "你好呀",
+        "timestamp": "2025-09-28T09:14:45.671501",
+        "character_id": "bill-gates"
+      },
+      {
+        "role": "assistant",
+        "content": "*推了推眼镜，露出标志性的温和微笑*\n\n你好！很高兴见到你。*快速看了一眼手表* 虽然我的日程通常排得很满，但与人交流总是值得花时间的。最近我在思考如何用技术解决一些全球性的挑战，比如疾病防治和教育不平等。你对这些话题感兴趣吗？",
+        "timestamp": "2025-09-28T09:14:49.347625",
+        "character_id": "bill-gates"
       }
     ],
     "context_summary": ""

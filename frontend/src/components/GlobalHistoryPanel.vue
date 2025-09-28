@@ -190,15 +190,46 @@ export default {
     // 确认删除
     const confirmDelete = async (session) => {
       try {
-        // 这里需要实现删除会话的API
-        // await apiService.deleteSession(session.session_id)
+        // 调用删除会话的API
+        await apiService.deleteSession(session.character_id, session.session_id)
         
         // 从列表中移除
         historyList.value = historyList.value.filter(s => s.session_id !== session.session_id)
+        
+        // 清理本地缓存状态
+        clearLocalSessionCache(session.character_id, session.session_id)
+        
+        console.log('会话删除成功:', session.session_id)
       } catch (error) {
         console.error('删除会话失败:', error)
         session.isDeleting = false
       }
+    }
+    
+    // 清理本地会话缓存
+    const clearLocalSessionCache = (characterId, sessionId) => {
+      // 清理游客模式的sessionStorage缓存
+      if (isGuestMode.value) {
+        const guestKey = `guest_character_${characterId}`
+        const guestData = sessionStorage.getItem(guestKey)
+        if (guestData) {
+          try {
+            const parsed = JSON.parse(guestData)
+            if (parsed.sessionId === sessionId) {
+              sessionStorage.removeItem(guestKey)
+              console.log('清理游客缓存:', guestKey)
+            }
+          } catch (error) {
+            console.error('清理游客缓存失败:', error)
+          }
+        }
+      }
+      
+      // 通知聊天页面清理内存缓存
+      // 使用事件总线或者直接操作window对象来通知
+      window.dispatchEvent(new CustomEvent('sessionDeleted', {
+        detail: { characterId, sessionId }
+      }))
     }
 
     // 格式化日期

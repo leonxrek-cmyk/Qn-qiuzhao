@@ -10,6 +10,8 @@ from config import Config
 from routes.ai_service import AIService
 from services.log_service import LogService
 from services.session_service import SessionService
+from services.intimacy_service import IntimacyService
+from services.user_service import UserService
 import json
 
 # 创建蓝图
@@ -165,6 +167,27 @@ def character_chat():
         ai_service = AIService()
         session_service = SessionService()
         
+        # 获取用户亲密度信息
+        intimacy_level = 0
+        intimacy_name = "陌生人"
+        is_first_message = False
+        session_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if session_token and character_id:
+            try:
+                user_service = UserService()
+                user_id = user_service.get_user_id_by_session(session_token)
+                if user_id:
+                    from services.intimacy_service import IntimacyService
+                    intimacy_service = IntimacyService()
+                    intimacy_level = intimacy_service.get_intimacy(user_id, character_id)
+                    intimacy_name = intimacy_service.get_level_name(intimacy_level)
+                    LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                                 log_level='Info', message=f'获取亲密度: 用户 {user_id}, 角色 {character_id}, 亲密度 {intimacy_level}({intimacy_name})')
+            except Exception as e:
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                             log_level='Warning', message=f'获取亲密度失败: {str(e)}')
+        
         # 如果提供了会话ID，使用会话上下文
         if session_id:
             # 先将用户消息添加到会话中
@@ -173,30 +196,27 @@ def character_chat():
             # 获取会话上下文消息
             context_messages = session_service.get_context_messages(session_id, character_name, character_description)
             
-            # 使用带上下文的聊天方法
-            response = ai_service.character_chat_with_context(
-                context_messages, character_name, character_description, model, stream
+            # 检查是否是第一次对话（除了系统消息外没有其他消息）
+            user_messages = [msg for msg in context_messages if msg.get('role') == 'user']
+            is_first_message = len(user_messages) <= 1  # 当前用户消息已经添加，所以<=1表示是第一次
+            
+            # 使用带亲密度的聊天方法
+            response = ai_service.character_chat_with_intimacy(
+                context_messages, character_name, character_description,
+                intimacy_level, intimacy_name, is_first_message,
+                model, stream
             )
         else:
-            # 使用角色配置文件中的提示词模板（如果有）
-            character_configs = load_character_configs()
-            if character_id and character_id in character_configs:
-                config = character_configs[character_id]
-                if 'prompt_template' in config:
-                    # 构建自定义提示词
-                    prompt = config['prompt_template'].format(user_query=user_query)
-                    messages = [{"role": "user", "content": prompt}]
-                    response = ai_service.chat_completion(messages, model, stream)
-                else:
-                    # 使用原始方式调用
-                    response = ai_service.character_chat(
-                        character_name, character_description, user_query, model, stream
-                    )
-            else:
-                # 使用原始方式调用
-                response = ai_service.character_chat(
-                    character_name, character_description, user_query, model, stream
-                )
+            # 没有会话ID的情况，构建简单的消息列表
+            messages = [{"role": "user", "content": user_query}]
+            is_first_message = True
+            
+            # 使用带亲密度的聊天方法
+            response = ai_service.character_chat_with_intimacy(
+                messages, character_name, character_description,
+                intimacy_level, intimacy_name, is_first_message,
+                model, stream
+            )
         
         if not response:
             LogService.log(current_time=current_time, model_name=model, function_name=function_name, 
@@ -213,16 +233,43 @@ def character_chat():
         if session_id:
             session_service.add_message(session_id, 'assistant', content, character_id)
         
+        # 增加亲密度（仅对已登录用户）
+        intimacy_result = None
+        session_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        if session_token and character_id:
+            try:
+                user_service = UserService()
+                user_id = user_service.get_user_id_by_session(session_token)
+                if user_id:
+                    intimacy_service = IntimacyService()
+                    intimacy_result = intimacy_service.increase_intimacy(user_id, character_id)
+                    LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                                 log_level='Info', message=f'亲密度增加: 用户 {user_id}, 角色 {character_id}')
+            except Exception as e:
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                             log_level='Warning', message=f'增加亲密度失败: {str(e)}')
+        
         # 请求成功日志
         LogService.log(current_time=current_time, model_name=model, function_name=function_name, 
                      log_level='Info', message=f'角色扮演聊天请求处理成功, 响应内容长度: {len(content)}字符')
         
-        return jsonify({
+        response_data = {
             'success': True,
             'content': content,
             'character_id': character_id,
             'session_id': session_id
-        })
+        }
+        
+        # 如果有亲密度结果，添加到响应中
+        if intimacy_result and intimacy_result.get('success'):
+            response_data['intimacy'] = {
+                'value': intimacy_result['intimacy'],
+                'level_name': intimacy_result['level_name'],
+                'level_up': intimacy_result['level_up'],
+                'old_level': intimacy_result.get('old_level')
+            }
+        
+        return jsonify(response_data)
     except Exception as e:
         LogService.log(current_time=current_time, model_name=Config.DEFAULT_MODEL, function_name=function_name, 
                      log_level='Error', message=f'角色扮演聊天请求处理失败: {str(e)}')

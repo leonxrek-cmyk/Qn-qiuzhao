@@ -22,12 +22,14 @@ def create_app():
     from routes.session_routes import session_bp
     from routes.auth_routes import auth_bp
     from routes.admin_routes import admin_bp
+    from routes.intimacy_routes import intimacy_bp
     
     app.register_blueprint(ai_bp, url_prefix='/api')
     app.register_blueprint(character_bp, url_prefix='/api')
     app.register_blueprint(session_bp, url_prefix='/api')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(admin_bp, url_prefix='/api')
+    app.register_blueprint(intimacy_bp, url_prefix='/api')
     
     # 错误处理
     @app.errorhandler(404)
