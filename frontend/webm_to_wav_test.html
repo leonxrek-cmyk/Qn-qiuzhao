@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebM到WAV转换测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .button.success { background-color: #28a745; color: white; }
+        .button.danger { background-color: #dc3545; color: white; }
+        .button.primary { background-color: #007bff; color: white; }
+        .button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .audio-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .audio-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 WebM到WAV转换测试</h1>
+        <p><strong>目标：</strong>测试WebM/Opus音频到16kHz WAV的转换，解决百度API兼容性问题</p>
+        
+        <div class="controls">
+            <button id="startBtn" class="button success">🎤 开始录音</button>
+            <button id="stopBtn" class="button danger" disabled>⏹️ 停止录音</button>
+            <button id="convertBtn" class="button primary" disabled>🔄 转换格式</button>
+            <button id="testBtn" class="button primary" disabled>🧪 测试识别</button>
+            <button id="clearBtn" class="button primary">🗑️ 清空</button>
+        </div>
+        
+        <div class="progress" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="audio-info" id="audioInfo">等待录音...</div>
+        
+        <div class="comparison" id="comparison" style="display: none;">
+            <div class="audio-section">
+                <h3>📹 原始WebM音频</h3>
+                <div id="originalInfo">-</div>
+                <audio controls id="originalAudio" style="width: 100%; margin-top: 10px;"></audio>
+            </div>
+            <div class="audio-section">
+                <h3>🎵 转换后WAV音频</h3>
+                <div id="convertedInfo">-</div>
+                <audio controls id="convertedAudio" style="width: 100%; margin-top: 10px;"></audio>
+            </div>
+        </div>
+        
+        <div class="container">
+            <h3>📝 详细日志</h3>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入音频转换器
+        import { convertWebMToWav, needsConversion, getAudioInfo } from './src/utils/audioConverter.js';
+        
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let originalBlob = null;
+        let convertedBlob = null;
+        
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const convertBtn = document.getElementById('convertBtn');
+        const testBtn = document.getElementById('testBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const audioInfo = document.getElementById('audioInfo');
+        const log = document.getElementById('log');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const comparison = document.getElementById('comparison');
+        const originalInfo = document.getElementById('originalInfo');
+        const convertedInfo = document.getElementById('convertedInfo');
+        const originalAudio = document.getElementById('originalAudio');
+        const convertedAudio = document.getElementById('convertedAudio');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateProgress(percent) {
+            progressBar.style.width = percent + '%';
+            if (percent > 0) {
+                progressContainer.style.display = 'block';
+            } else {
+                progressContainer.style.display = 'none';
+            }
+        }
+        
+        startBtn.addEventListener('click', async () => {
+            try {
+                addLog('🎤 开始录音测试...');
+                
+                const constraints = { audio: true };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                // 强制使用WebM格式进行测试
+                let mimeType = 'audio/webm';
+                if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                    mimeType = 'audio/webm;codecs=opus';
+                }
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType });
+                addLog(`📹 录音格式: ${mimeType}`);
+                
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        addLog(`📦 收到数据: ${event.data.size} bytes`);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    originalBlob = new Blob(audioChunks, { type: mimeType });
+                    addLog(`🎵 录音完成: ${originalBlob.size} bytes`);
+                    
+                    // 显示原始音频信息
+                    const info = await getAudioInfo(originalBlob);
+                    if (info) {
+                        originalInfo.innerHTML = `
+                            <strong>大小:</strong> ${originalBlob.size} bytes<br>
+                            <strong>格式:</strong> ${originalBlob.type}<br>
+                            <strong>采样率:</strong> ${info.sampleRate} Hz<br>
+                            <strong>声道:</strong> ${info.channels}<br>
+                            <strong>时长:</strong> ${info.duration.toFixed(2)} 秒
+                        `;
+                        addLog(`🎵 音频信息: ${info.sampleRate}Hz, ${info.channels}声道, ${info.duration.toFixed(2)}秒`);
+                    }
+                    
+                    // 设置音频播放
+                    originalAudio.src = URL.createObjectURL(originalBlob);
+                    
+                    audioInfo.innerHTML = `
+                        <strong>录音完成！</strong><br>
+                        格式: ${originalBlob.type}<br>
+                        大小: ${originalBlob.size} bytes<br>
+                        需要转换: ${needsConversion(originalBlob.type) ? '是' : '否'}
+                    `;
+                    
+                    convertBtn.disabled = false;
+                    comparison.style.display = 'grid';
+                    
+                    // 停止音频轨道
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                addLog('🔴 录音中...');
+                
+            } catch (error) {
+                addLog(`❌ 录音失败: ${error.message}`);
+            }
+        });
+        
+        stopBtn.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                addLog('⏹️ 停止录音');
+            }
+        });
+        
+        convertBtn.addEventListener('click', async () => {
+            if (!originalBlob) {
+                addLog('❌ 没有录音数据');
+                return;
+            }
+            
+            try {
+                addLog('🔄 开始WebM到WAV转换...');
+                updateProgress(10);
+                
+                // 转换为16kHz WAV
+                convertedBlob = await convertWebMToWav(originalBlob, 16000);
+                updateProgress(100);
+                
+                addLog(`✅ 转换完成: ${convertedBlob.size} bytes`);
+                
+                // 显示转换后音频信息
+                const info = await getAudioInfo(convertedBlob);
+                if (info) {
+                    convertedInfo.innerHTML = `
+                        <strong>大小:</strong> ${convertedBlob.size} bytes<br>
+                        <strong>格式:</strong> ${convertedBlob.type}<br>
+                        <strong>采样率:</strong> ${info.sampleRate} Hz<br>
+                        <strong>声道:</strong> ${info.channels}<br>
+                        <strong>时长:</strong> ${info.duration.toFixed(2)} 秒
+                    `;
+                    addLog(`🎵 转换后信息: ${info.sampleRate}Hz, ${info.channels}声道, ${info.duration.toFixed(2)}秒`);
+                }
+                
+                // 设置音频播放
+                convertedAudio.src = URL.createObjectURL(convertedBlob);
+                
+                testBtn.disabled = false;
+                updateProgress(0);
+                
+                addLog('🎉 转换成功！可以测试识别了');
+                
+            } catch (error) {
+                addLog(`❌ 转换失败: ${error.message}`);
+                updateProgress(0);
+            }
+        });
+        
+        testBtn.addEventListener('click', async () => {
+            if (!convertedBlob) {
+                addLog('❌ 没有转换后的音频');
+                return;
+            }
+            
+            try {
+                addLog('🚀 测试语音识别...');
+                
+                const formData = new FormData();
+                const audioFile = new File([convertedBlob], 'converted_recording.wav', {
+                    type: 'audio/wav'
+                });
+                formData.append('audio', audioFile);
+                
+                addLog(`📤 发送WAV文件: ${audioFile.size} bytes`);
+                
+                const response = await fetch('/api/voice_recognition', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                addLog(`📥 识别结果: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    addLog(`✅ 识别成功: "${result.text}"`);
+                    audioInfo.innerHTML = `
+                        <strong>🎉 识别成功！</strong><br>
+                        结果: "${result.text}"<br>
+                        置信度: ${result.confidence || 'N/A'}
+                    `;
+                } else {
+                    addLog(`❌ 识别失败: ${result.error}`);
+                    audioInfo.innerHTML = `
+                        <strong>❌ 识别失败</strong><br>
+                        错误: ${result.error}
+                    `;
+                }
+                
+            } catch (error) {
+                addLog(`❌ 测试失败: ${error.message}`);
+            }
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            log.innerHTML = '';
+            audioInfo.innerHTML = '等待录音...';
+            comparison.style.display = 'none';
+            updateProgress(0);
+            convertBtn.disabled = true;
+            testBtn.disabled = true;
+            originalBlob = null;
+            convertedBlob = null;
+            addLog('🗑️ 已清空');
+        });
+        
+        // 初始化
+        addLog('🚀 WebM到WAV转换测试工具已加载');
+        addLog('📋 测试流程:');
+        addLog('   1. 点击"开始录音"录制WebM格式音频');
+        addLog('   2. 点击"停止录音"完成录制');
+        addLog('   3. 点击"转换格式"将WebM转换为16kHz WAV');
+        addLog('   4. 对比播放原始和转换后的音频');
+        addLog('   5. 点击"测试识别"验证百度API识别效果');
+    </script>
+</body>
+</html>

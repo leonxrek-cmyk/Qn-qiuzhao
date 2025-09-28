@@ -11,12 +11,9 @@ class IntimacyService:
     
     # 亲密度等级配置
     INTIMACY_LEVELS = {
-        1: "初次相识",
-        5: "聊得火热", 
-        10: "相见恨晚",
-        20: "亲密无间",
-        50: "知音难觅",
-        100: "伯乐"
+        2: "好朋友",
+        30: "亲密好友",
+        60: "灵魂伴侣"
     }
     
     def __init__(self):
@@ -124,7 +121,7 @@ class IntimacyService:
     
     def get_level_name(self, intimacy: int) -> str:
         """根据亲密度获取等级名称"""
-        if intimacy == 0:
+        if intimacy <= 2:
             return "陌生人"
         
         # 找到对应的等级
@@ -132,7 +129,7 @@ class IntimacyService:
             if intimacy >= threshold:
                 return self.INTIMACY_LEVELS[threshold]
         
-        return "初次相识"
+        return "好朋友"
     
     def get_level_progress(self, intimacy: int) -> Dict:
         """获取等级进度信息"""
