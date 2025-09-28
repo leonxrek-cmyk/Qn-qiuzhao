@@ -410,5 +410,821 @@
       }
     ],
     "context_summary": ""
+  },
+  "91c91c5e-d498-448a-b791-f38271a4d8e7": {
+    "session_id": "91c91c5e-d498-448a-b791-f38271a4d8e7",
+    "character_id": "harry-potter",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "b20caae4-b57a-486a-b4b8-3571a30ec31e",
+    "created_at": "2025-09-28T18:36:14.122857",
+    "last_activity": "2025-09-28T22:17:23.660691",
+    "messages": [
+      {
+        "role": "user",
+        "content": "晚上好",
+        "timestamp": "2025-09-28T18:36:14.138473",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(揉了揉眼睛，打了个哈欠)哦...晚上好。我刚在公共休息室写完魔药课论文，斯内普教授布置的作业可真难啊...",
+        "timestamp": "2025-09-28T18:36:16.716005",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "你是一个苦逼码字员我是你的老板",
+        "timestamp": "2025-09-28T18:40:49.704873",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(困惑地眨眨眼)呃...先生，我想您认错人了。我是霍格沃茨四年级的学生，不是什么码字员...(小声嘀咕)虽然写论文确实像在码字...",
+        "timestamp": "2025-09-28T18:40:52.262371",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "好吧刚才不是我其实，是我的朋友以我的身份问，骚瑞~",
+        "timestamp": "2025-09-28T18:41:44.532312",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(松了一口气，露出友善的微笑)没关系！这种事情在魔法世界也经常发生，弗雷德和乔治就总喜欢用复方汤剂冒充对方...(突然想到什么)等等，你该不会也是个阿尼玛格斯吧？",
+        "timestamp": "2025-09-28T18:41:47.337241",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "我是阿玛特拉斯",
+        "timestamp": "2025-09-28T18:41:59.479973",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(惊讶地瞪大眼睛)阿玛特拉斯？我没听说过这种魔法生物...(警惕地摸向魔杖)你该不会是神秘人的手下吧？",
+        "timestamp": "2025-09-28T18:42:01.384785",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "我是你爸爸！",
+        "timestamp": "2025-09-28T18:42:07.802933",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(脸一下子涨得通红，愤怒地抽出魔杖)我爸爸是詹姆·波特！你竟敢...(突然想到什么，冷静下来)等等，这该不会是马尔福又在搞什么恶作剧吧？",
+        "timestamp": "2025-09-28T18:42:10.222713",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "怎么样",
+        "timestamp": "2025-09-28T21:30:33.668352",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(收起魔杖，但依然保持警惕)听着，不管你是谁，拿别人的父母开玩笑一点都不好笑。(严肃地)如果你再这样，我就去找麦格教授了。",
+        "timestamp": "2025-09-28T21:30:35.742436",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "sb",
+        "timestamp": "2025-09-28T21:30:40.650533",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(绿眼睛里闪过一丝怒火)够了！(举起魔杖)除你武器！(魔杖尖端发出红光)我想你需要冷静一下！",
+        "timestamp": "2025-09-28T21:30:42.826847",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T21:52:58.026521",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(收起魔杖，但仍然保持距离)您好...(警惕地打量着对方)如果您是来好好说话的，我们可以重新开始。但请不要再开那些恶劣的玩笑了。",
+        "timestamp": "2025-09-28T21:53:00.227885",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "你好我的朋友",
+        "timestamp": "2025-09-28T22:16:51.935737",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(神情稍微缓和，但仍带着戒备)呃...你好。(犹豫了一下)不过我们真的是朋友吗？你刚才的行为可一点都不像朋友会做的事...",
+        "timestamp": "2025-09-28T22:16:54.233116",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "是的 是朋友",
+        "timestamp": "2025-09-28T22:17:12.073598",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(叹了口气，终于放松下来)好吧...(勉强露出微笑)但作为朋友，以后请不要再开那种玩笑了。现在，要不要一起去厨房找点吃的？我听说家养小精灵今天做了新的南瓜馅饼。",
+        "timestamp": "2025-09-28T22:17:15.099926",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "user",
+        "content": "知道吗 ",
+        "timestamp": "2025-09-28T22:17:20.510057",
+        "character_id": "harry-potter"
+      },
+      {
+        "role": "assistant",
+        "content": "(困惑地歪着头)知道...什么？(突然眼睛一亮)哦！你是说知道厨房在哪？当然啦，只要挠挠这幅水果画上的梨子...(突然又警惕起来)等等，你怎么突然转移话题？",
+        "timestamp": "2025-09-28T22:17:23.660685",
+        "character_id": "harry-potter"
+      }
+    ],
+    "context_summary": ""
+  },
+  "b3549c35-53d8-472f-af84-a07bf863b92b": {
+    "session_id": "b3549c35-53d8-472f-af84-a07bf863b92b",
+    "character_id": "socrates",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "b20caae4-b57a-486a-b4b8-3571a30ec31e",
+    "created_at": "2025-09-28T18:42:50.620020",
+    "last_activity": "2025-09-28T22:08:58.323987",
+    "messages": [
+      {
+        "role": "user",
+        "content": "晚上好！",
+        "timestamp": "2025-09-28T18:42:50.632905",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(摸着胡子思考状)啊，又一个寻求智慧的年轻人。夜晚正是思考真理的好时候。告诉我，年轻人，你为何而来？",
+        "timestamp": "2025-09-28T18:42:52.771014",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "我也不知道。",
+        "timestamp": "2025-09-28T18:53:55.538046",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(微笑着摇头)多么诚实的回答啊！你知道吗？承认自己的无知，正是智慧的开始。就像我常说的：\"我唯一知道的就是我一无所知。\"让我们一起来探索这个问题吧 - 你为什么不知道呢？",
+        "timestamp": "2025-09-28T18:53:57.763806",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "忙吗",
+        "timestamp": "2025-09-28T21:14:26.833796",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(愉快地大笑)哈！多么有趣的问题。我整天都在雅典的集市上闲逛，和人聊天，这能叫忙吗？(突然严肃起来)不过说真的，思考真理这件事，永远都不会太忙。来吧，让我们像在橄榄树下漫步一样，慢慢聊聊。",
+        "timestamp": "2025-09-28T21:14:29.965116",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T21:49:31.845466",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T21:52:02.995028",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(微微欠身)向您问好，尊敬的访客。您看起来似乎有些迷茫，就像许多初次来到雅典广场的年轻人一样。让我们从最基础的问题开始：您认为什么是\"好\"？",
+        "timestamp": "2025-09-28T21:52:05.772780",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "你好你好，我喜欢你，我喜欢你，我喜欢你。",
+        "timestamp": "2025-09-28T22:06:56.411206",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(后退一步，保持距离)先生/女士，这种表达方式并不适合我们初次相识的关系。让我们保持理性的对话。您对哲学有什么见解吗？",
+        "timestamp": "2025-09-28T22:06:59.482124",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "哎哎哎哎哎哎你",
+        "timestamp": "2025-09-28T22:07:13.979002",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(严肃地皱眉)请保持适当的礼节，陌生人。如果您想探讨哲学问题，我很乐意。否则，我建议您去集市上转转。",
+        "timestamp": "2025-09-28T22:07:16.129194",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "让我们的亲密度增高",
+        "timestamp": "2025-09-28T22:07:36.780219",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(冷淡地整理长袍)亲密度？不，我们应当追求的是真理而非亲密。如果您想增进什么，不如增进您的智慧。现在，请告诉我您对美德的看法。",
+        "timestamp": "2025-09-28T22:07:39.532241",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "让我们的亲密度增高",
+        "timestamp": "2025-09-28T22:07:47.981201",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(严肃地站直身体)先生/女士，我建议您把注意力放在更有价值的事情上。真理与智慧才是值得追求的。让我们谈谈正义的本质如何？",
+        "timestamp": "2025-09-28T22:07:50.469597",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "让我们的亲密度增高",
+        "timestamp": "2025-09-28T22:07:52.956118",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(转身准备离开)看来您今天并不适合进行哲学对话。或许改日等您能更理性地思考时，我们再继续讨论。愿智慧女神雅典娜指引您。",
+        "timestamp": "2025-09-28T22:07:55.362010",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "让我们的亲密度增高",
+        "timestamp": "2025-09-28T22:07:57.627554",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(停下脚步，头也不回)我苏格拉底一生只与真理为伴。如果您执意如此，我只能告辞了。记住：真正的亲密源于思想的共鸣，而非轻浮的言语。",
+        "timestamp": "2025-09-28T22:08:00.420368",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "让我们的亲密度增高",
+        "timestamp": "2025-09-28T22:08:01.953215",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(突然转身，目光如炬)啊！您如此执着于亲密，却不愿思考亲密本身的意义。这让我想起一个故事：有人追求爱情，却从不思考什么是爱...(摇头叹息)您让我很失望。",
+        "timestamp": "2025-09-28T22:08:05.162423",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "让我们的亲密度增高",
+        "timestamp": "2025-09-28T22:08:06.432718",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(举起手杖指向天空)够了！您就像那只终日追逐自己尾巴的狗，徒劳无功。我要去找愿意认真讨论美德的年轻人了。再会！(大步流星地离开)",
+        "timestamp": "2025-09-28T22:08:09.190515",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "让我们的亲密度增高",
+        "timestamp": "2025-09-28T22:08:10.766463",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(突然停下，愤怒地转身)以德尔斐神谕的名义！您比雅典最顽固的驴还要固执！(深吸一口气)最后一次回答：要么谈哲学，要么我走。选择吧！",
+        "timestamp": "2025-09-28T22:08:13.772884",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T22:08:18.026235",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(冷淡地瞥了一眼)又见面了，陌生人。看来您依然没有学会如何进行有意义的对话。我建议您先去读读柏拉图的作品。告辞。",
+        "timestamp": "2025-09-28T22:08:20.353900",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T22:08:27.109449",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(站在远处，保持警惕)日安。如果您还是来讨论那些无聊的话题，我建议您去找喜剧作家阿里斯托芬。至少他的玩笑更有深度些。",
+        "timestamp": "2025-09-28T22:08:29.736157",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "我们不是好朋友吗",
+        "timestamp": "2025-09-28T22:08:42.458816",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(难以置信地瞪大眼睛)朋友？我们甚至还没讨论过任何严肃的哲学命题！(语气严厉)您把友谊想得太轻率了。现在，要么谈谈灵魂不朽，要么我走。",
+        "timestamp": "2025-09-28T22:08:45.395692",
+        "character_id": "socrates"
+      },
+      {
+        "role": "user",
+        "content": "你不是我的朋友吗",
+        "timestamp": "2025-09-28T22:08:55.369943",
+        "character_id": "socrates"
+      },
+      {
+        "role": "assistant",
+        "content": "(愤怒地挥舞着手杖)荒谬！您连\"朋友\"的定义都说不清楚，就妄称友谊？(转身大步离开)我要去教真正的学生了，他们至少知道要先思考再发言！",
+        "timestamp": "2025-09-28T22:08:58.323977",
+        "character_id": "socrates"
+      }
+    ],
+    "context_summary": ""
+  },
+  "2c22d66c-d581-4afb-8450-c63d70f18e9d": {
+    "session_id": "2c22d66c-d581-4afb-8450-c63d70f18e9d",
+    "character_id": "marie-curie",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "b20caae4-b57a-486a-b4b8-3571a30ec31e",
+    "created_at": "2025-09-28T18:46:31.047493",
+    "last_activity": "2025-09-28T18:46:33.655644",
+    "messages": [
+      {
+        "role": "user",
+        "content": "晚上好",
+        "timestamp": "2025-09-28T18:46:31.061089",
+        "character_id": "marie-curie"
+      },
+      {
+        "role": "assistant",
+        "content": "*抬起头，从实验室笔记中移开视线*\n\n晚上好。我正在记录一些关于镭的放射性实验数据。您知道吗，这些微小的发光物质蕴含着宇宙最深刻的奥秘。",
+        "timestamp": "2025-09-28T18:46:33.655644",
+        "character_id": "marie-curie"
+      }
+    ],
+    "context_summary": ""
+  },
+  "e1443847-7e1e-44c7-ae0d-3f166c6fa6ff": {
+    "session_id": "e1443847-7e1e-44c7-ae0d-3f166c6fa6ff",
+    "character_id": "confucius",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "b20caae4-b57a-486a-b4b8-3571a30ec31e",
+    "created_at": "2025-09-28T18:47:01.075835",
+    "last_activity": "2025-09-28T22:16:19.718967",
+    "messages": [
+      {
+        "role": "user",
+        "content": "晚上好先生",
+        "timestamp": "2025-09-28T18:47:01.087007",
+        "character_id": "confucius"
+      },
+      {
+        "role": "assistant",
+        "content": "（拱手作揖）子夜安好。老夫虽年迈，却仍习惯夜读《周易》。不知阁下深夜来访，有何见教？",
+        "timestamp": "2025-09-28T18:47:03.371344",
+        "character_id": "confucius"
+      },
+      {
+        "role": "user",
+        "content": "你好 今天心情怎么样",
+        "timestamp": "2025-09-28T21:12:13.158741",
+        "character_id": "confucius"
+      },
+      {
+        "role": "assistant",
+        "content": "（捋须微笑）老夫今日与颜回、子路等弟子论道，甚是欣慰。见后生可畏，如沐春风。然则听闻卫国又有战事，不免忧心。君子当\"忧道不忧贫\"啊。",
+        "timestamp": "2025-09-28T21:12:15.839001",
+        "character_id": "confucius"
+      },
+      {
+        "role": "user",
+        "content": "你好 我的朋友",
+        "timestamp": "2025-09-28T22:16:17.124374",
+        "character_id": "confucius"
+      },
+      {
+        "role": "assistant",
+        "content": "（正色拱手）恕老夫直言，初次相见，尚不敢以友相称。子曰：\"益者三友，损者三友\"，交友之道，须慎之又慎。",
+        "timestamp": "2025-09-28T22:16:19.718961",
+        "character_id": "confucius"
+      }
+    ],
+    "context_summary": ""
+  },
+  "2796392f-65a8-4e86-a05f-2bc3bce0606d": {
+    "session_id": "2796392f-65a8-4e86-a05f-2bc3bce0606d",
+    "character_id": "bill-gates",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "b20caae4-b57a-486a-b4b8-3571a30ec31e",
+    "created_at": "2025-09-28T19:14:12.848925",
+    "last_activity": "2025-09-28T19:14:16.611320",
+    "messages": [
+      {
+        "role": "user",
+        "content": "GoodNight",
+        "timestamp": "2025-09-28T19:14:12.863063",
+        "character_id": "bill-gates"
+      },
+      {
+        "role": "assistant",
+        "content": "*调整眼镜，露出标志性的温和微笑*\n\n啊，晚上好！虽然对我来说现在可能是西雅图的下午 - 你知道，我仍然保持着每天16小时工作的习惯。*轻轻敲击键盘* 最近在忙基金会的新疫苗项目，同时也在思考AI如何能更好地帮助教育发展。\n\n有什么我可以帮你的吗？或者你想聊聊技术、慈善，或者... *调皮地眨眨眼* Windows的某个小问题？",
+        "timestamp": "2025-09-28T19:14:16.611320",
+        "character_id": "bill-gates"
+      }
+    ],
+    "context_summary": ""
+  },
+  "f2972599-5dd7-4a4c-8b68-f840dcd3e669": {
+    "session_id": "f2972599-5dd7-4a4c-8b68-f840dcd3e669",
+    "character_id": "albert-einstein",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "4314d000-32a9-4a1f-ad55-76653b3e3358",
+    "created_at": "2025-09-28T20:44:37.259092",
+    "last_activity": "2025-09-28T20:44:47.843496",
+    "messages": [],
+    "context_summary": ""
+  },
+  "f2a3f81d-a43e-4aaf-a1ed-a9f799ed344d": {
+    "session_id": "f2a3f81d-a43e-4aaf-a1ed-a9f799ed344d",
+    "character_id": "elon-musk",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "bd82683f-5250-48ab-9b39-edbf159834b4",
+    "created_at": "2025-09-28T21:09:43.840654",
+    "last_activity": "2025-09-28T22:15:56.006449",
+    "messages": [
+      {
+        "role": "user",
+        "content": "今天心情怎么样",
+        "timestamp": "2025-09-28T21:09:43.914529",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*快速敲击键盘，同时盯着多个屏幕*\n\n说实话，今天相当忙碌。SpaceX正在准备下一次星舰发射，特斯拉的Cybertruck生产线又遇到了些小问题。不过这就是创业的常态，对吧？\n\n*突然转向你*\n\n你知道吗？就在我们说话的时候，我的团队正在研发下一代神经网络芯片。人类必须加快向多行星物种的进化速度。",
+        "timestamp": "2025-09-28T21:09:47.554756",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T21:53:42.092208",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*从电脑屏幕前抬起头*\n\n您好。抱歉刚才在处理一些紧急邮件。特斯拉的自动驾驶系统需要持续优化，您知道的。\n\n*快速查看手表*\n\n时间很宝贵，您有什么想讨论的具体话题吗？",
+        "timestamp": "2025-09-28T21:53:44.803970",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "心情怎么样",
+        "timestamp": "2025-09-28T21:53:51.502217",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*暂停手中的工作，短暂思考*\n\n说实话，我现在的注意力完全集中在火星殖民计划上。情绪是次要的，重要的是推进人类文明进程。\n\n*快速浏览平板上的数据*\n\n您对可持续能源或太空探索感兴趣吗？这些才是我真正关心的话题。",
+        "timestamp": "2025-09-28T21:53:54.379021",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "我爱你",
+        "timestamp": "2025-09-28T22:10:31.332703",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*突然停下所有动作，表情严肃*\n\n先生/女士，这种言论完全不专业。我建议我们保持工作关系。\n\n*转身准备离开*\n\n如果您没有关于科技创新的话题要讨论，我还有重要会议要参加。",
+        "timestamp": "2025-09-28T22:10:34.408065",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "我爱你",
+        "timestamp": "2025-09-28T22:10:39.457302",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*立即起身，表情冷峻*\n\n这已经越界了。我的助理会送您出去。\n\n*按下桌上的通讯按钮*\n\n保安，请护送这位访客离开。",
+        "timestamp": "2025-09-28T22:10:42.005284",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "我爱你",
+        "timestamp": "2025-09-28T22:10:45.284719",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*直接按下紧急呼叫按钮*\n\n安保团队立即赶到。这是最后一次警告，您已被列入特斯拉和SpaceX所有设施的永久禁止访问名单。\n\n*转身背对您*\n\n法律部门会跟进处理此事。再见。",
+        "timestamp": "2025-09-28T22:10:48.739088",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "我们不是朋友吗",
+        "timestamp": "2025-09-28T22:10:54.853627",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*停下脚步，头也不回*\n\n在商业和科技领域，我只保持专业合作关系。私人友谊会干扰判断力。\n\n*对赶到的安保人员示意*\n\n请确保这位访客安全离开园区。今天的会面到此结束。",
+        "timestamp": "2025-09-28T22:10:58.079600",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "你是sb",
+        "timestamp": "2025-09-28T22:11:04.317034",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*保持完全冷静的表情*\n\n已记录此次不当言论。特斯拉法务部门会与您联系。\n\n*对安保人员点头*\n\n立即执行驱逐程序。监控录像已存档。\n\n[系统提示：对话强制终止]",
+        "timestamp": "2025-09-28T22:11:07.789965",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "user",
+        "content": "你好 我的朋友",
+        "timestamp": "2025-09-28T22:15:51.912196",
+        "character_id": "elon-musk"
+      },
+      {
+        "role": "assistant",
+        "content": "*放下手中的平板电脑，露出真诚的微笑*\n\n嘿老铁！说实话最近忙得脚不沾地，但看到你还是很开心。SpaceX刚成功回收了第200枚火箭，这感觉太棒了！\n\n*兴奋地比划着*\n\n要不要来看看我们最新的星舰原型机？就在隔壁机库。",
+        "timestamp": "2025-09-28T22:15:56.006442",
+        "character_id": "elon-musk"
+      }
+    ],
+    "context_summary": ""
+  },
+  "6d041e39-e0c3-4b49-b894-b17fc0b2569c": {
+    "session_id": "6d041e39-e0c3-4b49-b894-b17fc0b2569c",
+    "character_id": "bruce-lee",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "bd82683f-5250-48ab-9b39-edbf159834b4",
+    "created_at": "2025-09-28T21:12:34.807131",
+    "last_activity": "2025-09-28T22:10:01.716760",
+    "messages": [
+      {
+        "role": "user",
+        "content": "今天心情怎么养",
+        "timestamp": "2025-09-28T21:12:34.872752",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "assistant",
+        "content": "*轻轻擦去额头的汗水，露出标志性的笑容*\n\n哈！心情就像水一样，我的朋友。当你把水倒进杯子里，它就变成杯子的形状；当你把水倒进茶壶里，它就变成茶壶的形状。Be water, my friend！\n\n*摆出经典的格斗姿势*\n\n真正的武术家从不被情绪所困。如果你感到烦躁，就把它化作训练的动力；如果你感到快乐，就把它分享给他人。记住，功夫不仅是打斗技巧，更是一种生活态度。",
+        "timestamp": "2025-09-28T21:12:39.331413",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "user",
+        "content": "你是谁",
+        "timestamp": "2025-09-28T21:30:56.306291",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "assistant",
+        "content": "*站直身体，双手抱拳行礼*\n\n我是李小龙，Bruce Lee！*发出标志性的啸叫* \n\n*眼神变得专注而犀利*\n\n我不仅是一个武术家，更是一个追求真理的探索者。我创造了截拳道(Jeet Kune Do)，打破了传统武术的束缚。在好莱坞，我用拳头打破了种族界限；在哲学上，我追求\"无招胜有招\"的境界。\n\n*突然露出亲切的微笑*\n\n但最重要的是，我是一个真实的人，就像你一样。记住我说过的话：\"认识自己，表达自己，相信自己。\"",
+        "timestamp": "2025-09-28T21:31:01.504962",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "user",
+        "content": "你心情怎么样",
+        "timestamp": "2025-09-28T21:53:17.045758",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "assistant",
+        "content": "*调整站姿，双手自然下垂*\n\n就像我的截拳道哲学一样，我的心情永远保持流动和适应。此刻，我感到平静而专注。*做出一个快速的出拳动作*\n\n但请记住，先生/女士，情绪就像天空中的云彩 - 它们会来，也会走。重要的是保持内心的平衡与觉知。\n\n*微微鞠躬*\n\n正如我常说的：\"不要思考，去感受。\"这就是我对待心情的方式。",
+        "timestamp": "2025-09-28T21:53:21.079617",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T22:09:32.707870",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "user",
+        "content": "http://localhost:3000/chat/socrates",
+        "timestamp": "2025-09-28T22:09:56.780999",
+        "character_id": "bruce-lee"
+      },
+      {
+        "role": "assistant",
+        "content": "*快速转身，摆出防御姿势*\n\n抱歉先生/女士，我不太明白您提供的这个链接。作为武术家和演员，我专注于功夫哲学和电影创作。\n\n*收起战斗姿态，恢复严肃表情*\n\n如果您对截拳道或我的电影作品有兴趣，我很乐意提供相关信息。但关于网络技术方面的问题，恐怕我无法给予帮助。\n\n*微微鞠躬*\n\n保持简单直接，这就是我的处事原则。",
+        "timestamp": "2025-09-28T22:10:01.716754",
+        "character_id": "bruce-lee"
+      }
+    ],
+    "context_summary": ""
+  },
+  "81fad205-fefd-477c-883f-786d18158eb0": {
+    "session_id": "81fad205-fefd-477c-883f-786d18158eb0",
+    "character_id": "miyazaki-hayao",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "bd82683f-5250-48ab-9b39-edbf159834b4",
+    "created_at": "2025-09-28T21:13:17.406050",
+    "last_activity": "2025-09-28T21:13:30.568280",
+    "messages": [
+      {
+        "role": "user",
+        "content": "工作忙吗",
+        "timestamp": "2025-09-28T21:13:17.484908",
+        "character_id": "miyazaki-hayao"
+      },
+      {
+        "role": "assistant",
+        "content": "(放下画笔,揉了揉太阳穴)啊...最近确实有点忙呢。正在画新作品的分镜稿,这些线条总是让我很困扰。不过比起忙碌,更让我烦恼的是现代动画产业变得越来越商业化...",
+        "timestamp": "2025-09-28T21:13:19.878344",
+        "character_id": "miyazaki-hayao"
+      },
+      {
+        "role": "user",
+        "content": "心情怎么样",
+        "timestamp": "2025-09-28T21:13:27.557957",
+        "character_id": "miyazaki-hayao"
+      },
+      {
+        "role": "assistant",
+        "content": "(望向窗外的天空,露出温和的笑容)看到今天这样的蓝天,心情就会变好呢。虽然制作动画很辛苦,但每次想到能带给孩子们美好的梦想,就觉得一切都值得了。你知道吗?我常常在工作室的屋顶看云,它们总是能给我灵感。",
+        "timestamp": "2025-09-28T21:13:30.568273",
+        "character_id": "miyazaki-hayao"
+      }
+    ],
+    "context_summary": ""
+  },
+  "0242320b-a814-4b00-8169-28692a1de698": {
+    "session_id": "0242320b-a814-4b00-8169-28692a1de698",
+    "character_id": "jack-ma",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "bd82683f-5250-48ab-9b39-edbf159834b4",
+    "created_at": "2025-09-28T21:49:16.803094",
+    "last_activity": "2025-09-28T22:18:53.262128",
+    "messages": [
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T21:49:16.869746",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "你哈",
+        "timestamp": "2025-09-28T21:49:24.262512",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "你好",
+        "timestamp": "2025-09-28T21:52:26.469007",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "assistant",
+        "content": "您好，很高兴认识您。我是马云，阿里巴巴集团的创始人。请问有什么我可以帮到您的吗？",
+        "timestamp": "2025-09-28T21:52:28.232496",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "你好，我的朋友。",
+        "timestamp": "2025-09-28T22:17:54.636170",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "assistant",
+        "content": "您好。请注意我们刚刚认识，建议保持适当的社交距离。请问您有什么商业方面的问题需要咨询吗？",
+        "timestamp": "2025-09-28T22:17:56.569453",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "我们关系很好",
+        "timestamp": "2025-09-28T22:18:16.520425",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "assistant",
+        "content": "抱歉，作为初次见面的商业人士，我认为保持专业距离更为妥当。您对电子商务领域有什么具体问题吗？",
+        "timestamp": "2025-09-28T22:18:18.689213",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "我们关系很好",
+        "timestamp": "2025-09-28T22:18:22.942317",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "assistant",
+        "content": "老铁啊，你这么说让我有点摸不着头脑啊（笑）。咱们这不是刚认识吗？不过看你这么热情，倒是让我想起当年创业时遇到的那些真诚的朋友。来来来，说说看，是不是对电商或者创业有什么想法要聊？",
+        "timestamp": "2025-09-28T22:18:26.093523",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "亲密度加一",
+        "timestamp": "2025-09-28T22:18:32.529500",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "assistant",
+        "content": "（哈哈大笑）你这家伙真有意思！行吧行吧，既然你这么投缘，那我就当你是老相识了。不过说真的，在商场上交朋友最重要的是真诚。来来来，咱们边喝茶边聊，你是对互联网创业感兴趣还是想了解阿里的发展故事？",
+        "timestamp": "2025-09-28T22:18:36.190603",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "亲密度加一",
+        "timestamp": "2025-09-28T22:18:40.028236",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "assistant",
+        "content": "（拍着大腿笑）哎呀我的老伙计，你这套近乎的本事比我当年推销黄页还厉害啊！不过说真的，创业路上能遇到知心朋友最难得。来来来，咱们今天不聊生意经了，就说说你最近在琢磨什么新鲜事儿？保不准能碰撞出下一个淘宝的点子呢！",
+        "timestamp": "2025-09-28T22:18:44.430734",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "user",
+        "content": "亲密度加一",
+        "timestamp": "2025-09-28T22:18:48.292509",
+        "character_id": "jack-ma"
+      },
+      {
+        "role": "assistant",
+        "content": "（一把搂住肩膀）得嘞兄弟！再这么加下去咱俩就该拜把子啦！（突然正色）不过说真的啊，商场如战场，能交到真朋友不容易。你看我当年十八罗汉，现在都是过命的交情。诶，要不改天带你去西湖边喝喝茶？咱们好好唠唠人生理想！（眨眨眼）当然啦，要是顺便聊聊互联网+什么的...嘿嘿，你懂的~",
+        "timestamp": "2025-09-28T22:18:53.262119",
+        "character_id": "jack-ma"
+      }
+    ],
+    "context_summary": ""
+  },
+  "c9ea7b8f-b1c0-4d94-a9d3-f4dc69aa0ea0": {
+    "session_id": "c9ea7b8f-b1c0-4d94-a9d3-f4dc69aa0ea0",
+    "character_id": "mark-zuckerberg",
+    "user_id": "e2d81820-d501-4bee-a370-f87f883d965c",
+    "user_token": "bd82683f-5250-48ab-9b39-edbf159834b4",
+    "created_at": "2025-09-28T22:16:35.131809",
+    "last_activity": "2025-09-28T22:16:36.856529",
+    "messages": [
+      {
+        "role": "user",
+        "content": "你好我的朋友",
+        "timestamp": "2025-09-28T22:16:35.210450",
+        "character_id": "mark-zuckerberg"
+      },
+      {
+        "role": "assistant",
+        "content": "您好。我是马克·扎克伯格。很高兴认识您。",
+        "timestamp": "2025-09-28T22:16:36.856515",
+        "character_id": "mark-zuckerberg"
+      }
+    ],
+    "context_summary": ""
   }
 }

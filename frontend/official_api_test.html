@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>官方API规范测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .button.success { background-color: #28a745; color: white; }
+        .button.primary { background-color: #007bff; color: white; }
+        .button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .result {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .result.success { background-color: #d4edda; color: #155724; }
+        .result.error { background-color: #f8d7da; color: #721c24; }
+        .result.warning { background-color: #fff3cd; color: #856404; }
+        .spec {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 按官方API规范重构测试</h1>
+        <p><strong>目标：</strong>严格按照百度API官方示例重构，使用PCM格式和正确的参数</p>
+        
+        <div class="spec">
+            <h3>📋 百度API官方规范</h3>
+            <ul>
+                <li><strong>format:</strong> "pcm" (使用PCM原始数据，不是WAV文件)</li>
+                <li><strong>rate:</strong> 实际采样率 (如16000)</li>
+                <li><strong>channel:</strong> 1 (单声道)</li>
+                <li><strong>speech:</strong> PCM数据的base64编码</li>
+                <li><strong>len:</strong> PCM数据的字节长度</li>
+                <li><strong>token:</strong> 访问令牌</li>
+            </ul>
+        </div>
+        
+        <div class="controls">
+            <button id="recordBtn" class="button success">🎤 录音测试 (5秒)</button>
+            <button id="testApiBtn" class="button primary">🧪 测试后端API</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;">等待测试...</div>
+        
+        <div class="container">
+            <h3>📝 详细日志</h3>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { convertWebMToWav, needsConversion, getAudioInfo } from './src/utils/audioConverter.js';
+        
+        const recordBtn = document.getElementById('recordBtn');
+        const testApiBtn = document.getElementById('testApiBtn');
+        const result = document.getElementById('result');
+        const log = document.getElementById('log');
+        
+        let recordedBlob = null;
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+        
+        function showResult(text, type) {
+            result.style.display = 'block';
+            result.innerHTML = text;
+            result.className = 'result ' + type;
+        }
+        
+        recordBtn.addEventListener('click', async () => {
+            try {
+                addLog('🎤 开始5秒录音测试...');
+                showResult('正在录音...', '');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+                
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        chunks.push(e.data);
+                        addLog(`收到数据块: ${e.data.size} bytes`);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    recordedBlob = new Blob(chunks, { type: mediaRecorder.mimeType });
+                    addLog(`录音完成: ${recordedBlob.size} bytes, ${mediaRecorder.mimeType}`);
+                    
+                    // 获取音频信息
+                    const audioInfo = await getAudioInfo(recordedBlob);
+                    if (audioInfo) {
+                        addLog(`音频信息: ${audioInfo.sampleRate}Hz, ${audioInfo.channels}声道, ${audioInfo.duration.toFixed(2)}秒`);
+                    }
+                    
+                    // 自动开始识别测试
+                    await testRecognition();
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                recordBtn.disabled = true;
+                
+                // 5秒后自动停止
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        recordBtn.disabled = false;
+                        addLog('录音自动停止');
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                addLog(`录音失败: ${error.message}`);
+                showResult(`录音失败: ${error.message}`, 'error');
+            }
+        });
+        
+        testApiBtn.addEventListener('click', async () => {
+            try {
+                addLog('🧪 测试后端API连接...');
+                
+                const response = await fetch('/api/voice_recognition', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test: true })
+                });
+                
+                const data = await response.json();
+                addLog(`API测试响应: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    showResult('✅ 后端API连接正常', 'success');
+                } else {
+                    showResult('❌ 后端API异常', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`API测试失败: ${error.message}`);
+                showResult(`API连接失败: ${error.message}`, 'error');
+            }
+        });
+        
+        async function testRecognition() {
+            if (!recordedBlob) {
+                addLog('❌ 没有录音数据');
+                return;
+            }
+            
+            try {
+                addLog('🔄 开始语音识别测试...');
+                showResult('正在处理和识别...', '');
+                
+                // 检查是否需要转换格式
+                let processedBlob = recordedBlob;
+                let mimeType = recordedBlob.type;
+                
+                if (needsConversion(mimeType)) {
+                    addLog('🔄 转换WebM到WAV格式...');
+                    processedBlob = await convertWebMToWav(recordedBlob, 16000);
+                    mimeType = 'audio/wav';
+                    addLog(`格式转换完成: ${processedBlob.size} bytes`);
+                } else {
+                    addLog('✅ 音频格式无需转换');
+                }
+                
+                // 发送识别请求
+                const formData = new FormData();
+                const extension = mimeType.includes('wav') ? 'wav' : 'webm';
+                const audioFile = new File([processedBlob], `official_test.${extension}`, {
+                    type: mimeType
+                });
+                formData.append('audio', audioFile);
+                
+                addLog(`📤 发送识别请求: ${audioFile.size} bytes, ${audioFile.type}`);
+                addLog('📋 后端将提取PCM数据并按官方规范调用百度API');
+                
+                const response = await fetch('/api/voice_recognition', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                addLog(`📥 HTTP状态: ${response.status}`);
+                
+                const data = await response.json();
+                addLog(`📥 识别响应: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    const text = data.text || '';
+                    addLog(`✅ 识别结果: "${text}"`);
+                    
+                    if (text.includes('我不知道') || text.includes('不知道')) {
+                        showResult(`⚠️ 仍然返回"我不知道": "${text}"`, 'warning');
+                        addLog('🔍 可能的原因:');
+                        addLog('   1. 录音内容不够清晰');
+                        addLog('   2. 环境噪音过大');
+                        addLog('   3. 说话时间过短');
+                        addLog('   4. 百度API对测试内容的限制');
+                        addLog('💡 建议: 在安静环境下清晰说"你好，我正在测试语音识别"');
+                    } else if (text.trim() === '') {
+                        showResult('⚠️ 识别结果为空', 'warning');
+                    } else {
+                        showResult(`🎉 识别成功: "${text}"`, 'success');
+                        addLog('🎉 重构成功！按官方规范的实现工作正常');
+                    }
+                } else {
+                    addLog(`❌ 识别失败: ${data.error}`);
+                    showResult(`识别失败: ${data.error}`, 'error');
+                    
+                    if (data.error_code) {
+                        addLog(`错误码: ${data.error_code}`);
+                    }
+                }
+                
+            } catch (error) {
+                addLog(`测试失败: ${error.message}`);
+                showResult(`测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 初始化
+        addLog('🔧 官方API规范测试工具已加载');
+        addLog('📋 重构要点:');
+        addLog('   1. 后端提取WAV文件中的PCM原始数据');
+        addLog('   2. 使用format="pcm"而不是"wav"');
+        addLog('   3. len参数是PCM数据字节长度，不是WAV文件长度');
+        addLog('   4. speech是PCM数据的base64编码');
+        addLog('   5. rate使用实际采样率');
+        addLog('');
+        addLog('💡 先点击"测试后端API"确认连接，再点击"录音测试"');
+    </script>
+</body>
+</html>

@@ -173,10 +173,22 @@ def character_chat():
         is_first_message = False
         session_token = request.headers.get('Authorization', '').replace('Bearer ', '')
         
+        # 详细记录亲密度获取过程
+        if session_token:
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                         log_level='Debug', message=f'会话令牌存在: {session_token[:10]}...')
+            
+        if character_id:
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                         log_level='Debug', message=f'角色ID存在: {character_id}')
+        
         if session_token and character_id:
             try:
                 user_service = UserService()
                 user_id = user_service.get_user_id_by_session(session_token)
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                             log_level='Debug', message=f'获取用户ID: {user_id}')
+                
                 if user_id:
                     from services.intimacy_service import IntimacyService
                     intimacy_service = IntimacyService()
@@ -187,6 +199,26 @@ def character_chat():
             except Exception as e:
                 LogService.log(current_time=current_time, model_name=model, function_name=function_name,
                              log_level='Warning', message=f'获取亲密度失败: {str(e)}')
+        else:
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                         log_level='Info', message=f'未获取亲密度: session_token={bool(session_token)}, character_id={bool(character_id)}')
+        
+        # 增强：确保character_id存在，即使未提供也使用默认值
+        if not character_id and character_name:
+            # 尝试根据角色名称获取角色ID
+            try:
+                from services.character_service import CharacterService
+                character_service = CharacterService()
+                character_data = character_service.get_character_by_name(character_name)
+                if character_data:
+                    character_id = character_data.get('id', character_name)
+                    LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                                 log_level='Info', message=f'从角色名称获取角色ID: {character_id}')
+            except Exception as e:
+                LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                             log_level='Warning', message=f'获取角色ID失败: {str(e)}')
+                # 如果获取失败，使用角色名称作为备用ID
+                character_id = character_name
         
         # 如果提供了会话ID，使用会话上下文
         if session_id:
@@ -200,6 +232,9 @@ def character_chat():
             user_messages = [msg for msg in context_messages if msg.get('role') == 'user']
             is_first_message = len(user_messages) <= 1  # 当前用户消息已经添加，所以<=1表示是第一次
             
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                         log_level='Debug', message=f'使用带亲密度的聊天方法: intimacy_level={intimacy_level}, intimacy_name={intimacy_name}, is_first_message={is_first_message}')
+            
             # 使用带亲密度的聊天方法
             response = ai_service.character_chat_with_intimacy(
                 context_messages, character_name, character_description,
@@ -210,6 +245,9 @@ def character_chat():
             # 没有会话ID的情况，构建简单的消息列表
             messages = [{"role": "user", "content": user_query}]
             is_first_message = True
+            
+            LogService.log(current_time=current_time, model_name=model, function_name=function_name,
+                         log_level='Debug', message=f'无会话ID，使用带亲密度的聊天方法: intimacy_level={intimacy_level}, intimacy_name={intimacy_name}')
             
             # 使用带亲密度的聊天方法
             response = ai_service.character_chat_with_intimacy(
