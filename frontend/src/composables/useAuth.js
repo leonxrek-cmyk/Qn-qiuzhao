@@ -128,10 +128,27 @@ export function useAuth() {
     isLoading.value = true
     try {
       const response = await apiService.register(username, password, email)
-      return response
+      const data = response.data
+      
+      if (data.success) {
+        return { success: true, user: data.user, message: data.message }
+      } else {
+        return { success: false, error: data.error }
+      }
     } catch (error) {
       console.error('注册失败:', error)
-      return { success: false, error: '注册失败，请检查网络连接' }
+      // 检查是否是网络错误
+      if (error.response && error.response.data) {
+        // 服务器返回了错误响应，提取具体错误信息
+        const errorData = error.response.data
+        return { success: false, error: errorData.error || '注册失败' }
+      } else if (error.request) {
+        // 请求发出但没有收到响应
+        return { success: false, error: '无法连接到服务器，请检查网络连接' }
+      } else {
+        // 其他错误
+        return { success: false, error: '注册失败，请稍后重试' }
+      }
     } finally {
       isLoading.value = false
     }

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>录音数据测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button.success { background-color: #28a745; color: white; }
+        .button.danger { background-color: #dc3545; color: white; }
+        .button.primary { background-color: #007bff; color: white; }
+        .button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .audio-player {
+            margin: 10px 0;
+        }
+        .hex-dump {
+            font-family: monospace;
+            font-size: 10px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 录音数据测试工具</h1>
+        
+        <div class="controls">
+            <button id="startBtn" class="button success">🎤 开始录音</button>
+            <button id="stopBtn" class="button danger" disabled>⏹️ 停止录音</button>
+            <button id="testBtn" class="button primary" disabled>🧪 测试识别</button>
+            <button id="clearBtn" class="button primary">🗑️ 清空</button>
+        </div>
+        
+        <div id="audioPlayer" class="audio-player" style="display: none;">
+            <h3>🎵 录音回放</h3>
+            <audio controls id="audioElement"></audio>
+        </div>
+        
+        <div class="container">
+            <h3>📊 录音信息</h3>
+            <div id="audioInfo">等待录音...</div>
+        </div>
+        
+        <div class="container">
+            <h3>🔍 音频数据分析</h3>
+            <div id="hexDump" class="hex-dump">等待录音数据...</div>
+        </div>
+        
+        <div class="container">
+            <h3>📝 测试日志</h3>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let currentAudioBlob = null;
+        
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const testBtn = document.getElementById('testBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const audioInfo = document.getElementById('audioInfo');
+        const hexDump = document.getElementById('hexDump');
+        const log = document.getElementById('log');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioElement = document.getElementById('audioElement');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+        
+        function arrayBufferToHex(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let hex = '';
+            for (let i = 0; i < Math.min(bytes.length, 256); i++) {
+                if (i % 16 === 0) hex += `\n${i.toString(16).padStart(4, '0')}: `;
+                hex += bytes[i].toString(16).padStart(2, '0') + ' ';
+            }
+            if (bytes.length > 256) {
+                hex += `\n... (显示前256字节，总共${bytes.length}字节)`;
+            }
+            return hex;
+        }
+        
+        function analyzeAudioFormat(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let format = '未知格式';
+            
+            if (bytes.length >= 12) {
+                // WAV格式检查
+                if (bytes[0] === 0x52 && bytes[1] === 0x49 && 
+                    bytes[2] === 0x46 && bytes[3] === 0x46) {
+                    format = 'WAV (RIFF)';
+                }
+                // WebM格式检查
+                else if (bytes[0] === 0x1a && bytes[1] === 0x45 && 
+                         bytes[2] === 0xdf && bytes[3] === 0xa3) {
+                    format = 'WebM (EBML)';
+                }
+                // MP3格式检查
+                else if ((bytes[0] === 0xFF && (bytes[1] & 0xE0) === 0xE0) ||
+                         (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33)) {
+                    format = 'MP3';
+                }
+                // OGG格式检查
+                else if (bytes[0] === 0x4F && bytes[1] === 0x67 && 
+                         bytes[2] === 0x67 && bytes[3] === 0x53) {
+                    format = 'OGG';
+                }
+            }
+            
+            return format;
+        }
+        
+        startBtn.addEventListener('click', async () => {
+            try {
+                addLog('🎤 请求麦克风权限...');
+                
+                const constraints = {
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                addLog('✅ 麦克风权限获取成功');
+                
+                // 测试不同的录音格式
+                let mimeType = '';
+                const testFormats = [
+                    'audio/webm;codecs=opus',
+                    'audio/webm',
+                    'audio/mp4',
+                    'audio/wav'
+                ];
+                
+                for (const format of testFormats) {
+                    if (MediaRecorder.isTypeSupported(format)) {
+                        mimeType = format;
+                        addLog(`✅ 选择格式: ${format}`);
+                        break;
+                    }
+                }
+                
+                if (!mimeType) {
+                    addLog('⚠️ 使用默认格式');
+                    mediaRecorder = new MediaRecorder(stream);
+                    mimeType = mediaRecorder.mimeType || 'unknown';
+                } else {
+                    mediaRecorder = new MediaRecorder(stream, { mimeType });
+                }
+                
+                addLog(`📹 实际使用格式: ${mimeType}`);
+                
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        addLog(`📦 收到数据块: ${event.data.size} bytes`);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    currentAudioBlob = new Blob(audioChunks, { type: mimeType });
+                    addLog(`🎵 录音完成: ${currentAudioBlob.size} bytes, 类型: ${currentAudioBlob.type}`);
+                    
+                    // 分析音频数据
+                    const arrayBuffer = await currentAudioBlob.arrayBuffer();
+                    const detectedFormat = analyzeAudioFormat(arrayBuffer);
+                    
+                    audioInfo.innerHTML = `
+                        <strong>文件大小:</strong> ${currentAudioBlob.size} bytes<br>
+                        <strong>MIME类型:</strong> ${currentAudioBlob.type}<br>
+                        <strong>检测格式:</strong> ${detectedFormat}<br>
+                        <strong>估计时长:</strong> ${(currentAudioBlob.size / (16000 * 2)).toFixed(2)} 秒
+                    `;
+                    
+                    // 显示十六进制数据
+                    hexDump.innerHTML = arrayBufferToHex(arrayBuffer);
+                    
+                    // 创建音频播放器
+                    const audioUrl = URL.createObjectURL(currentAudioBlob);
+                    audioElement.src = audioUrl;
+                    audioPlayer.style.display = 'block';
+                    
+                    testBtn.disabled = false;
+                    
+                    // 停止音频轨道
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start(1000);
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                addLog('🔴 开始录音...');
+                
+            } catch (error) {
+                addLog(`❌ 录音失败: ${error.message}`);
+            }
+        });
+        
+        stopBtn.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                addLog('⏹️ 停止录音');
+            }
+        });
+        
+        testBtn.addEventListener('click', async () => {
+            if (!currentAudioBlob) {
+                addLog('❌ 没有录音数据');
+                return;
+            }
+            
+            try {
+                addLog('🚀 开始测试语音识别...');
+                
+                const formData = new FormData();
+                
+                // 根据MIME类型确定文件扩展名
+                let extension = 'wav';
+                if (currentAudioBlob.type.includes('webm')) {
+                    extension = 'webm';
+                } else if (currentAudioBlob.type.includes('mp4')) {
+                    extension = 'mp4';
+                } else if (currentAudioBlob.type.includes('mp3')) {
+                    extension = 'mp3';
+                }
+                
+                const audioFile = new File([currentAudioBlob], `test_recording.${extension}`, {
+                    type: currentAudioBlob.type
+                });
+                
+                formData.append('audio', audioFile);
+                
+                addLog(`📤 发送文件: ${audioFile.name} (${audioFile.size} bytes, ${audioFile.type})`);
+                
+                const response = await fetch('/api/voice_recognition', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                addLog(`📥 响应状态: ${response.status} ${response.statusText}`);
+                
+                const responseText = await response.text();
+                addLog(`📥 原始响应: ${responseText}`);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    addLog(`❌ 响应解析失败: ${e.message}`);
+                    return;
+                }
+                
+                if (data.success) {
+                    addLog(`✅ 识别成功: "${data.text}"`);
+                    addLog(`📊 置信度: ${data.confidence || 'N/A'}`);
+                } else {
+                    addLog(`❌ 识别失败: ${data.error}`);
+                    if (data.error_code) {
+                        addLog(`🔢 错误码: ${data.error_code}`);
+                    }
+                }
+                
+            } catch (error) {
+                addLog(`❌ 请求失败: ${error.message}`);
+            }
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            log.innerHTML = '';
+            audioInfo.innerHTML = '等待录音...';
+            hexDump.innerHTML = '等待录音数据...';
+            audioPlayer.style.display = 'none';
+            testBtn.disabled = true;
+            currentAudioBlob = null;
+            addLog('🗑️ 已清空');
+        });
+        
+        addLog('🚀 录音数据测试工具已加载');
+        
+        // 检查浏览器支持
+        const formats = [
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/mp4',
+            'audio/wav'
+        ];
+        
+        addLog('🔍 支持的格式:');
+        formats.forEach(format => {
+            const supported = MediaRecorder.isTypeSupported(format);
+            addLog(`  ${format}: ${supported ? '✅' : '❌'}`);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+执行了内置的 unittest 测试套件，结果显示 11 个用例全部通过（OK）。下面给出可直接复现的详细测试步骤与命令：
+
+环境确认
+
+- 后端地址： http://127.0.0.1:5000/
+- 所有后端接口都挂载在 '/api' 前缀下（例如： /api/chat 、 /api/models ）。
+批量运行内置测试
+
+- 在项目根目录执行：
+  - python -m unittest backend.tests.test_ai_intimacy_prompt backend.tests.test_session_context backend.tests.test_chat_api
+- 实际运行结果：
+  - Ran 11 tests in ~0.07s ， OK 。
+- 可选：一次性发现并运行全部 unittest 测试文件：
+  - python -m unittest discover -s backend/tests -p "test_*.py"
+接口快速验证（PowerShell）
+
+- 获取模型列表：
+  - Invoke-RestMethod -Uri http://127.0.0.1:5000/api/models -Method GET | ConvertTo-Json -Depth 6
+  - 期望： 200 ，返回包含可用模型的 JSON。
+- 基础聊天：
+  - Invoke-RestMethod -Uri http://127.0.0.1:5000/api/chat -Method POST -ContentType 'application/json' -Body '{"messages":[{"role":"user","content":"你好"}]}'
+  - 期望： 200 ，JSON 含 success=true 、 content 为模型回复。
+- 角色聊天：
+  - Invoke-RestMethod -Uri http://127.0.0.1:5000/api/character_chat -Method POST -ContentType 'application/json' -Body '{"character_name":"Alice","user_query":"早上好"}'
+  - 期望： 200 ，JSON 含 success=true 、 content 。
+- 多模态聊天（JSON 文本）：
+  - Invoke-RestMethod -Uri http://127.0.0.1:5000/api/multimodal_chat -Method POST -ContentType 'application/json' -Body '{"text":"描述这张图片"}'
+  - 期望： 200 ，JSON 含 success=true 、 content 。
+- 会话管理串联：
+  - 创建会话： $s = Invoke-RestMethod -Uri http://127.0.0.1:5000/api/sessions -Method POST -ContentType 'application/json' -Body '{"character_id": 1}'
+  - 保存会话 ID： $sid = $s.session_id
+  - 查看消息： Invoke-RestMethod -Uri ("http://127.0.0.1:5000/api/sessions/" + $sid + "/messages") -Method GET
+  - 清空消息： Invoke-RestMethod -Uri ("http://127.0.0.1:5000/api/sessions/" + $sid + "/clear") -Method POST
+  - 期望：各步骤 200 ；消息返回包含 messages 列表。
+- 亲密度（若无认证可能返回 401）：
+  - Invoke-RestMethod -Uri http://127.0.0.1:5000/api/intimacy/1 -Method GET
+  - 期望：已认证返回 200 和 { level:int, progress:float } ；未认证可能 401 。
+
+
+
+
+- API 接口：为 /api/chat 写集成测试，包含三条用例：
+  - 成功路径： mock 掉 AIService.chat_completion ，返回 {"choices":[{"message":{"content":"Hello"}}]} ，断言 200 与内容。
+  - 失败路径： mock 返回 None ，断言返回 500 与错误信息“AI服务响应失败”。
+  - 参数错误： messages 为空，断言返回 400 与“messages参数不能为空”。
+实现要点
+
+- 所有接口测试使用 Flask 的 test_client() ，不依赖真实网络或模型。
+- 所有外部调用均通过 unittest.mock.patch 模拟，避免耗时耗费。
+- 测试文件内补充 sys.path.append(...) 以便从 backend 目录正确导入模块。
+运行结果
+
+- 运行命令： python -m unittest backend.tests.test_ai_intimacy_prompt backend.tests.test_session_context backend.tests.test_chat_api
+- 结果：共 11 个断言用例全部通过（OK）。

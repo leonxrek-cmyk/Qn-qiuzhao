@@ -17,7 +17,12 @@
           placeholder="搜索角色名称或描述..."
           @input="filterCharacters"
         />
-        <span class="search-icon">🔍</span>
+        <span 
+          :class="['search-icon', { 'clear-icon': searchQuery.trim() }]"
+          @click="clearSearch"
+        >
+          {{ searchQuery.trim() ? '✕' : '🔍' }}
+        </span>
       </div>
       
       <select v-model="filterTag" @change="filterCharacters" class="filter-select">
@@ -236,6 +241,13 @@ export default {
       // 触发计算属性重新计算
     }
 
+    const clearSearch = () => {
+      if (searchQuery.value.trim()) {
+        searchQuery.value = ''
+        filterCharacters()
+      }
+    }
+
     const addCharacter = () => {
       editingCharacter.value = {
         id: '',
@@ -292,6 +304,8 @@ export default {
         }
 
         if (response.success) {
+          const action = originalCharacterId.value ? '修改' : '添加'
+          alert(`${action}成功！`)
           closeEditCharacter()
           await loadCharacters()
         } else {
@@ -344,6 +358,7 @@ export default {
       newTag,
       loadCharacters,
       filterCharacters,
+      clearSearch,
       addCharacter,
       editCharacter,
       deleteCharacter,
@@ -419,6 +434,42 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.search-icon:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.search-icon.clear-icon {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  animation: fadeToRed 0.3s ease;
+}
+
+.search-icon.clear-icon:hover {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+@keyframes fadeToRed {
+  from {
+    color: #64748b;
+    background: transparent;
+  }
+  to {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+  }
 }
 
 .filter-select {

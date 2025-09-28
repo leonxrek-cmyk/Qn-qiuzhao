@@ -8,7 +8,7 @@ import json
 class LogService:
     _instance = None
     _loggers = {}
-    _log_dir = "logs"
+    _log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
     
     def __new__(cls):
         if cls._instance is None:

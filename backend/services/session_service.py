@@ -17,7 +17,7 @@ class SessionService:
         self.session_timeout = 3600 * 24  # 会话超时时间（24小时）
         
         # 会话存储文件路径（可选的持久化存储）
-        self.sessions_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'sessions.json')
+        self.sessions_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'sessions.json')
         
         # 加载已有会话（如果存在）
         self._load_sessions()

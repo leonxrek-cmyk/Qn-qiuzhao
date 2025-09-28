@@ -9,12 +9,12 @@ import json
 import os
 from datetime import datetime, timedelta
 
-admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+admin_bp = Blueprint('admin', __name__)
 
 def load_character_configs():
     """加载角色配置"""
     try:
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'character_configs.json')
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'character_configs.json')
         with open(config_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
@@ -24,7 +24,9 @@ def load_character_configs():
 def save_character_configs(configs):
     """保存角色配置"""
     try:
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'character_configs.json')
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'character_configs.json')
+        # 确保目录存在
+        os.makedirs(os.path.dirname(config_path), exist_ok=True)
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(configs, f, ensure_ascii=False, indent=2)
         return True
@@ -91,13 +93,11 @@ def create_user():
             return jsonify({'success': False, 'error': '用户名和密码不能为空'}), 400
         
         user_service = get_user_service()
-        result = user_service.register_user(username, password, email)
+        result = user_service.register_user(username, password, email, nickname)
         
         if result['success']:
             # 更新用户信息
             user_id = result['user']['id']
-            if nickname:
-                user_service.update_user_nickname_by_id(user_id, nickname)
             if is_admin:
                 user_service.set_admin_status(user_id, True)
             
@@ -129,6 +129,7 @@ def update_user(user_id):
         data = request.json
         nickname = data.get('nickname', '').strip()
         email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
         is_admin = data.get('is_admin', False)
         
         user_service = get_user_service()
@@ -140,6 +141,10 @@ def update_user(user_id):
         # 更新邮箱
         if email:
             user_service.update_user_email_by_id(user_id, email)
+        
+        # 更新密码（如果提供了新密码）
+        if password:
+            user_service.update_user_password_by_id(user_id, password)
         
         # 更新管理员状态
         user_service.set_admin_status(user_id, is_admin)
@@ -370,7 +375,8 @@ def get_statistics():
                 character_stats[character_id] = {
                     'messageCount': 0,
                     'userCount': set(),
-                    'sessionCount': 0
+                    'sessionCount': 0,
+                    'totalIntimacy': 0
                 }
             
             character_stats[character_id]['messageCount'] += len(messages)
@@ -379,7 +385,23 @@ def get_statistics():
             if user_id:
                 character_stats[character_id]['userCount'].add(user_id)
         
-        # 生成热门角色列表
+        # 计算每个角色的亲密度总和（基于所有用户）
+        all_users_data = user_service.get_all_users_data()
+        for user_id, user_data in all_users_data.items():
+            intimacy_data = user_data.get('intimacy', {})
+            for character_id, intimacy_value in intimacy_data.items():
+                if character_id in character_stats:
+                    character_stats[character_id]['totalIntimacy'] += intimacy_value
+                elif character_id in configs:
+                    # 如果角色存在但没有会话记录，也要统计亲密度
+                    character_stats[character_id] = {
+                        'messageCount': 0,
+                        'userCount': set(),
+                        'sessionCount': 0,
+                        'totalIntimacy': intimacy_value
+                    }
+        
+        # 生成热门角色列表（按亲密度总和排序）
         popular_characters = []
         for character_id, stats in character_stats.items():
             if character_id in configs:
@@ -391,11 +413,12 @@ def get_statistics():
                     'avatar': character_config.get('avatar', f'/avatars/{character_id}.png'),
                     'messageCount': stats['messageCount'],
                     'userCount': len(stats['userCount']),
-                    'sessionCount': stats['sessionCount']
+                    'sessionCount': stats['sessionCount'],
+                    'totalIntimacy': stats['totalIntimacy']
                 })
         
-        # 按消息数量排序
-        popular_characters.sort(key=lambda x: x['messageCount'], reverse=True)
+        # 按亲密度总和排序
+        popular_characters.sort(key=lambda x: x['totalIntimacy'], reverse=True)
         popular_characters = popular_characters[:10]  # 取前10个
         
         statistics = {
@@ -415,3 +438,65 @@ def get_statistics():
         LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
                       log_level='Error', message=f'获取统计数据失败: {str(e)}')
         return jsonify({'success': False, 'error': '获取统计数据失败'}), 500
+
+@admin_bp.route('/character-user-stats/<character_id>', methods=['GET'])
+def get_character_user_stats(character_id):
+    """获取指定角色的用户统计数据"""
+    current_time = LogService.get_current_time()
+    function_name = 'get_character_user_stats'
+    model_name = 'Admin'
+    
+    try:
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        if not token:
+            return jsonify({'success': False, 'error': '缺少认证令牌'}), 401
+        
+        if not check_admin_permission(token):
+            return jsonify({'success': False, 'error': '权限不足'}), 403
+        
+        user_service = get_user_service()
+        session_service = SessionService()
+        
+        # 获取所有用户数据
+        all_users_data = user_service.get_all_users_data()
+        
+        # 获取所有会话数据
+        all_sessions = session_service.get_all_sessions()
+        
+        # 统计每个用户与该角色的数据
+        user_stats = []
+        
+        for user_id, user_data in all_users_data.items():
+            # 获取该用户与该角色的亲密度
+            intimacy = user_data.get('intimacy', {}).get(character_id, 0)
+            
+            # 统计该用户与该角色的对话数
+            message_count = 0
+            for session_id, session_data in all_sessions.items():
+                if (session_data.get('user_id') == user_id and 
+                    session_data.get('character_id') == character_id):
+                    message_count += len(session_data.get('messages', []))
+            
+            # 只包含有交互的用户（亲密度>0或有对话）
+            if intimacy > 0 or message_count > 0:
+                user_stats.append({
+                    'userId': user_id,
+                    'username': user_data.get('username', ''),
+                    'nickname': user_data.get('nickname', user_data.get('username', '')),
+                    'avatar': user_data.get('avatar', '/user-avatar.svg'),
+                    'intimacy': intimacy,
+                    'messageCount': message_count
+                })
+        
+        # 按亲密度降序排序
+        user_stats.sort(key=lambda x: x['intimacy'], reverse=True)
+        
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
+                      log_level='Info', message=f'获取角色{character_id}用户统计: {len(user_stats)}个用户')
+        
+        return jsonify({'success': True, 'data': user_stats})
+        
+    except Exception as e:
+        LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
+                      log_level='Error', message=f'获取角色用户统计失败: {str(e)}')
+        return jsonify({'success': False, 'error': '获取角色用户统计失败'}), 500

@@ -25,6 +25,7 @@ def register():
         username = data.get('username', '').strip()
         password = data.get('password', '').strip()
         email = data.get('email', '').strip()
+        nickname = data.get('nickname', '').strip()
         
         LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
                      log_level='Info', message=f'用户注册请求: {username}')
@@ -49,23 +50,11 @@ def register():
             }), 400
         
         user_service = get_user_service()
-        result = user_service.register_user(username, password, email)
+        result = user_service.register_user(username, password, email, nickname)
         
         if result['success']:
-            # 注册成功后生成用户头像
-            try:
-                avatar_data = create_user_avatar(username)
-                # 更新用户头像信息
-                user_service.update_user_avatar(result['user']['id'], avatar_data)
-                result['user']['avatar'] = avatar_data
-                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
-                             log_level='Info', message=f'用户注册成功并生成头像: {username}')
-            except Exception as e:
-                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
-                             log_level='Warning', message=f'头像生成失败: {username} - {str(e)}')
-                # 头像生成失败不影响注册成功
-                LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
-                             log_level='Info', message=f'用户注册成功: {username}')
+            LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
+                         log_level='Info', message=f'用户注册成功: {username}')
         else:
             LogService.log(current_time=current_time, model_name=model_name, function_name=function_name, 
                          log_level='Warning', message=f'用户注册失败: {username} - {result["error"]}')

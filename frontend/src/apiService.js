@@ -105,7 +105,7 @@ export const apiService = {
     })
   },
 
-  // 语音识别接口
+  // 语音识别接口 - 文件上传方式
   voiceRecognition(formData) {
     return apiClient.post('/voice_recognition', formData, {
       headers: {
@@ -114,16 +114,31 @@ export const apiService = {
     })
   },
 
-  // 文字转语音接口 - 使用pyttsx3/gTTS，支持角色特定参数
-  textToSpeech(text, characterId = null, useOnline = false, language = 'zh') {
+  // 语音识别接口 - Base64方式
+  voiceRecognitionBase64(audioData, format = 'wav') {
+    return apiClient.post('/voice_recognition_base64', {
+      audio_data: audioData,
+      format: format
+    })
+  },
+
+  // 文字转语音接口 - 使用七牛云TTS
+  textToSpeech(text, characterId = null, encoding = 'mp3') {
     return apiClient.post('/text_to_speech', {
       text,
       character_id: characterId,
-      use_online: useOnline,
-      language: language
-    }, {
-      responseType: 'blob'  // 确保返回二进制数据
+      encoding
     })
+  },
+
+  // 获取音色列表
+  getVoiceList() {
+    return apiClient.get('/voice_list')
+  },
+
+  // 获取角色音色映射
+  getCharacterVoices() {
+    return apiClient.get('/character_voices')
   },
 
   // 获取角色配置
@@ -388,6 +403,16 @@ export const apiService = {
     const token = localStorage.getItem('auth_token')
     return apiClient.get('/admin/statistics', {
       params,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  },
+
+  // 获取角色用户统计数据
+  getCharacterUserStats(characterId) {
+    const token = localStorage.getItem('auth_token')
+    return apiClient.get(`/admin/character-user-stats/${characterId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

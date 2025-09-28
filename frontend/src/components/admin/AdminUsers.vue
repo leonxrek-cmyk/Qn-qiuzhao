@@ -17,7 +17,12 @@
           placeholder="搜索用户名、邮箱或昵称..."
           @input="filterUsers"
         />
-        <span class="search-icon">🔍</span>
+        <span 
+          :class="['search-icon', { 'clear-icon': searchQuery.trim() }]"
+          @click="clearSearch"
+        >
+          {{ searchQuery.trim() ? '✕' : '🔍' }}
+        </span>
       </div>
       
       <select v-model="filterType" @change="filterUsers" class="filter-select">
@@ -104,9 +109,14 @@
             <input type="email" v-model="editingUser.email" />
           </div>
           
-          <div class="form-group" v-if="!editingUser.id">
-            <label>密码</label>
-            <input type="password" v-model="editingUser.password" required />
+          <div class="form-group">
+            <label>{{ editingUser.id ? '新密码（留空则不修改）' : '密码' }}</label>
+            <input 
+              type="password" 
+              v-model="editingUser.password" 
+              :required="!editingUser.id"
+              :placeholder="editingUser.id ? '留空则不修改密码' : '请输入密码'"
+            />
           </div>
           
           <div class="form-group">
@@ -139,7 +149,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import apiService from '../../apiService.js'
 
 export default {
@@ -205,6 +215,13 @@ export default {
       // 触发计算属性重新计算
     }
 
+    const clearSearch = () => {
+      if (searchQuery.value.trim()) {
+        searchQuery.value = ''
+        filterUsers()
+      }
+    }
+
     const editUser = (user) => {
       editingUser.value = {
         id: user.id,
@@ -249,6 +266,8 @@ export default {
         }
 
         if (response.success) {
+          const action = editingUser.value.id ? '修改' : '添加'
+          alert(`${action}成功！`)
           closeEditUser()
           await loadUsers()
         } else {
@@ -292,6 +311,14 @@ export default {
       }
       showEditUser.value = true
     }
+    
+    // 监听showAddUser变化
+    watch(showAddUser, (newValue) => {
+      if (newValue) {
+        handleAddUser()
+        showAddUser.value = false
+      }
+    })
 
     onMounted(() => {
       loadUsers()
@@ -309,6 +336,7 @@ export default {
       editingUser,
       loadUsers,
       filterUsers,
+      clearSearch,
       editUser,
       deleteUser,
       saveUser,
@@ -383,6 +411,42 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.search-icon:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.search-icon.clear-icon {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  animation: fadeToRed 0.3s ease;
+}
+
+.search-icon.clear-icon:hover {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+@keyframes fadeToRed {
+  from {
+    color: #64748b;
+    background: transparent;
+  }
+  to {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+  }
 }
 
 .filter-select {

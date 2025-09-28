@@ -18,7 +18,7 @@ import json
 ai_bp = Blueprint('ai', __name__)
 
 # 角色配置文件路径
-CHARACTERS_CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'character_configs.json')
+CHARACTERS_CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'character_configs.json')
 
 def load_character_configs():
     """加载角色配置"""

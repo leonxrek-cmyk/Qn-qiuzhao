@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引导式录音测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #007bff;
+        }
+        .step.active {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+        }
+        .step.completed {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+        }
+        .button {
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .button.primary { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .button.success { 
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+        .button.danger { 
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .countdown {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            color: #f44336;
+            margin: 20px 0;
+        }
+        .suggestion {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .result {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .result.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎤 引导式语音录音测试</h1>
+        <p style="text-align: center; color: #666;">按照步骤进行，提高语音识别成功率</p>
+        
+        <div id="step1" class="step active">
+            <h3>📋 步骤1: 环境准备</h3>
+            <p><strong>请确保：</strong></p>
+            <ul>
+                <li>✅ 在安静的环境中（关闭音乐、电视等）</li>
+                <li>✅ 麦克风距离嘴巴15-30厘米</li>
+                <li>✅ 浏览器已允许麦克风权限</li>
+                <li>✅ 网络连接稳定</li>
+            </ul>
+            <button id="step1Btn" class="button primary">✅ 环境已准备好</button>
+        </div>
+        
+        <div id="step2" class="step">
+            <h3>🗣️ 步骤2: 录音内容准备</h3>
+            <div class="suggestion">
+                <p><strong>建议说以下内容之一：</strong></p>
+                <ul>
+                    <li>"你好，我正在测试语音识别功能"</li>
+                    <li>"今天天气很好，我很高兴"</li>
+                    <li>"我喜欢使用人工智能助手"</li>
+                    <li>"语音识别技术非常有用"</li>
+                </ul>
+                <p><strong>注意：</strong>说话要清晰、语速适中、音量适中</p>
+            </div>
+            <button id="step2Btn" class="button primary" disabled>📝 我知道要说什么了</button>
+        </div>
+        
+        <div id="step3" class="step">
+            <h3>🎙️ 步骤3: 开始录音</h3>
+            <p>点击按钮后，会有3秒倒计时，然后开始录音5秒</p>
+            <div id="countdown" class="countdown" style="display: none;"></div>
+            <button id="recordBtn" class="button success" disabled>🎤 开始录音</button>
+            <button id="stopBtn" class="button danger" disabled style="display: none;">⏹️ 停止录音</button>
+        </div>
+        
+        <div id="step4" class="step">
+            <h3>🔄 步骤4: 处理和识别</h3>
+            <p>录音完成后，系统会自动处理音频并进行识别</p>
+            <button id="testBtn" class="button primary" disabled>🧪 开始识别</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;">
+            等待结果...
+        </div>
+        
+        <div class="container">
+            <h3>📝 详细日志</h3>
+            <div class="log" id="log"></div>
+        </div>
+        
+        <div class="container">
+            <h3>💡 故障排除</h3>
+            <div class="suggestion">
+                <p><strong>如果仍然返回"我不知道"：</strong></p>
+                <ul>
+                    <li>🔊 提高说话音量，确保麦克风能清晰收音</li>
+                    <li>🗣️ 说话更加清晰，避免方言或口音过重</li>
+                    <li>⏱️ 延长说话时间，至少说3-5秒</li>
+                    <li>🔇 确保环境安静，没有背景噪音</li>
+                    <li>🎤 检查麦克风设备是否正常工作</li>
+                    <li>🔄 尝试说不同的内容</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { convertWebMToWav, needsConversion, getAudioInfo } from './src/utils/audioConverter.js';
+        
+        let currentStep = 1;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedBlob = null;
+        
+        const steps = document.querySelectorAll('.step');
+        const result = document.getElementById('result');
+        const log = document.getElementById('log');
+        const countdown = document.getElementById('countdown');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStep(step) {
+            steps.forEach((s, index) => {
+                s.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    s.classList.add('completed');
+                } else if (index + 1 === step) {
+                    s.classList.add('active');
+                }
+            });
+            currentStep = step;
+        }
+        
+        function showResult(text, type) {
+            result.style.display = 'block';
+            result.innerHTML = text;
+            result.className = 'result ' + type;
+        }
+        
+        function startCountdown(callback) {
+            let count = 3;
+            countdown.style.display = 'block';
+            countdown.textContent = count;
+            
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdown.textContent = count;
+                } else {
+                    countdown.textContent = '开始！';
+                    setTimeout(() => {
+                        countdown.style.display = 'none';
+                        callback();
+                    }, 500);
+                    clearInterval(timer);
+                }
+            }, 1000);
+        }
+        
+        // 步骤1
+        document.getElementById('step1Btn').addEventListener('click', () => {
+            addLog('✅ 环境准备完成');
+            updateStep(2);
+            document.getElementById('step2Btn').disabled = false;
+        });
+        
+        // 步骤2
+        document.getElementById('step2Btn').addEventListener('click', () => {
+            addLog('📝 录音内容准备完成');
+            updateStep(3);
+            document.getElementById('recordBtn').disabled = false;
+        });
+        
+        // 步骤3 - 录音
+        document.getElementById('recordBtn').addEventListener('click', async () => {
+            try {
+                addLog('🎤 准备开始录音...');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+                
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        audioChunks.push(e.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                    addLog(`🎵 录音完成: ${recordedBlob.size} bytes, ${mediaRecorder.mimeType}`);
+                    
+                    updateStep(4);
+                    document.getElementById('testBtn').disabled = false;
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                // 开始倒计时
+                startCountdown(() => {
+                    addLog('🔴 开始录音，请清晰说话...');
+                    mediaRecorder.start();
+                    document.getElementById('recordBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-block';
+                    document.getElementById('stopBtn').disabled = false;
+                    
+                    // 5秒后自动停止
+                    setTimeout(() => {
+                        if (mediaRecorder && mediaRecorder.state === 'recording') {
+                            mediaRecorder.stop();
+                            document.getElementById('stopBtn').style.display = 'none';
+                            addLog('⏹️ 录音自动停止');
+                        }
+                    }, 5000);
+                });
+                
+            } catch (error) {
+                addLog(`❌ 录音失败: ${error.message}`);
+                showResult(`录音失败: ${error.message}`, 'error');
+            }
+        });
+        
+        // 手动停止录音
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                document.getElementById('stopBtn').style.display = 'none';
+                addLog('⏹️ 手动停止录音');
+            }
+        });
+        
+        // 步骤4 - 识别
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            if (!recordedBlob) {
+                addLog('❌ 没有录音数据');
+                return;
+            }
+            
+            try {
+                addLog('🔄 开始处理音频...');
+                showResult('正在处理音频和识别语音...', '');
+                
+                // 获取音频信息
+                const audioInfo = await getAudioInfo(recordedBlob);
+                if (audioInfo) {
+                    addLog(`🎵 音频信息: ${audioInfo.sampleRate}Hz, ${audioInfo.channels}声道, ${audioInfo.duration.toFixed(2)}秒`);
+                }
+                
+                // 检查是否需要转换
+                let processedBlob = recordedBlob;
+                let mimeType = recordedBlob.type;
+                
+                if (needsConversion(mimeType)) {
+                    addLog('🔄 转换WebM到WAV格式...');
+                    processedBlob = await convertWebMToWav(recordedBlob, 16000);
+                    mimeType = 'audio/wav';
+                    addLog(`✅ 转换完成: ${processedBlob.size} bytes`);
+                }
+                
+                // 发送识别请求
+                const formData = new FormData();
+                const extension = mimeType.includes('wav') ? 'wav' : 'webm';
+                const audioFile = new File([processedBlob], `guided_recording.${extension}`, {
+                    type: mimeType
+                });
+                formData.append('audio', audioFile);
+                
+                addLog(`📤 发送识别请求: ${audioFile.size} bytes, ${audioFile.type}`);
+                
+                const response = await fetch('/api/voice_recognition', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                addLog(`📥 识别响应: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    const text = data.text || '';
+                    addLog(`✅ 识别结果: "${text}"`);
+                    
+                    if (text.includes('我不知道') || text.includes('不知道')) {
+                        showResult(`⚠️ 仍然返回"我不知道": "${text}"`, 'warning');
+                        addLog('💡 建议:');
+                        addLog('   1. 重新录音，说话更清晰');
+                        addLog('   2. 提高音量，确保麦克风收音清晰');
+                        addLog('   3. 在更安静的环境中录音');
+                        addLog('   4. 尝试说建议的标准句子');
+                    } else if (text.trim() === '') {
+                        showResult('⚠️ 识别结果为空，可能是静音', 'warning');
+                    } else {
+                        showResult(`🎉 识别成功: "${text}"`, 'success');
+                        addLog('🎉 语音识别成功！');
+                    }
+                } else {
+                    addLog(`❌ 识别失败: ${data.error}`);
+                    showResult(`识别失败: ${data.error}`, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ 处理失败: ${error.message}`);
+                showResult(`处理失败: ${error.message}`, 'error');
+            }
+        });
+        
+        // 初始化
+        addLog('🚀 引导式录音测试工具已加载');
+        addLog('📋 请按照步骤进行，确保最佳的录音效果');
+    </script>
+</body>
+</html>

@@ -72,7 +72,8 @@ class UserService:
                     'language': 'zh-CN',
                     'notifications': True,
                     'auto_play_voice': False
-                }
+                },
+                'intimacy': {}
             }
             self.save_users()
             print(f"管理员账户已创建: {admin_username}")
@@ -99,7 +100,8 @@ class UserService:
                     'language': 'zh-CN',
                     'notifications': True,
                     'auto_play_voice': False
-                }
+                },
+                'intimacy': {}
             }
             self.save_users()
             print(f"测试用户已创建: {test_username}")
@@ -139,7 +141,7 @@ class UserService:
             'total': len(users_list)
         }
 
-    def register_user(self, username: str, password: str, email: str = None) -> Dict[str, Any]:
+    def register_user(self, username: str, password: str, email: str = None, nickname: str = None) -> Dict[str, Any]:
         """用户注册"""
         if username in self.users:
             return {
@@ -150,12 +152,23 @@ class UserService:
         user_id = str(uuid.uuid4())
         hashed_password = self._hash_password(password)
         
+        # 生成头像：优先使用昵称，如果没有昵称则使用用户名
+        avatar_name = nickname if nickname else username
+        try:
+            from routes.avatar_service import create_user_avatar
+            avatar_data = create_user_avatar(avatar_name)
+        except Exception as e:
+            print(f"生成头像失败: {str(e)}")
+            avatar_data = '/user-avatar.svg'  # 默认头像
+        
         user_data = {
             'id': user_id,
             'username': username,
             'password': hashed_password,
             'email': email,
-            'avatar': '/user-avatar.svg',  # 默认头像
+            'nickname': nickname if nickname else username,
+            'avatar': avatar_data,
+            'is_admin': False,
             'created_at': datetime.datetime.now().isoformat(),
             'last_login': None,
             'settings': {
@@ -164,7 +177,8 @@ class UserService:
                 'auto_play_voice': False,
                 'default_model': 'deepseek-v3'
             },
-            'chat_history': {}  # character_id -> [session_ids]
+            'chat_history': {},  # character_id -> [session_ids]
+            'intimacy': {}  # character_id -> intimacy_value
         }
 
         self.users[username] = user_data
@@ -172,7 +186,14 @@ class UserService:
 
         return {
             'success': True,
-            'user_id': user_id,
+            'user': {
+                'id': user_id,
+                'username': username,
+                'email': email,
+                'nickname': nickname if nickname else username,
+                'avatar': avatar_data,
+                'is_admin': False
+            },
             'message': '注册成功'
         }
 
@@ -449,6 +470,15 @@ class UserService:
                 return True
         return False
 
+    def update_user_password_by_id(self, user_id: str, password: str) -> bool:
+        """通过用户ID更新密码"""
+        for username, user_data in self.users.items():
+            if user_data['id'] == user_id:
+                user_data['password'] = self._hash_password(password)
+                self.save_users()
+                return True
+        return False
+
     def set_admin_status(self, user_id: str, is_admin: bool) -> bool:
         """设置用户管理员状态"""
         for username, user_data in self.users.items():
@@ -480,6 +510,13 @@ class UserService:
                 self.save_users()
                 return True
         return False
+
+    def get_all_users_data(self) -> Dict[str, Dict[str, Any]]:
+        """获取所有用户的完整数据（用于统计）"""
+        result = {}
+        for username, user_data in self.users.items():
+            result[user_data['id']] = user_data
+        return result
 
 # 全局用户服务实例
 _user_service_instance = None

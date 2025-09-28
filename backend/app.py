@@ -1,9 +1,24 @@
 """
 Flask应用主文件 - 重构后的简化版本
 """
+import logging
+import os
+import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import Config
+
+# 配置日志编码，解决Windows下的Unicode问题
+if sys.platform.startswith('win'):
+    # Windows下强制使用UTF-8编码
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs', 'app.log'), encoding='utf-8')
+        ]
+    )
 
 def create_app():
     """创建Flask应用实例"""
@@ -23,13 +38,17 @@ def create_app():
     from routes.auth_routes import auth_bp
     from routes.admin_routes import admin_bp
     from routes.intimacy_routes import intimacy_bp
+    from routes.asr_routes import asr_bp
+    from routes.tts_routes import tts_bp
     
     app.register_blueprint(ai_bp, url_prefix='/api')
     app.register_blueprint(character_bp, url_prefix='/api')
     app.register_blueprint(session_bp, url_prefix='/api')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(admin_bp, url_prefix='/api')
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(intimacy_bp, url_prefix='/api')
+    app.register_blueprint(asr_bp, url_prefix='/api')
+    app.register_blueprint(tts_bp, url_prefix='/api')
     
     # 错误处理
     @app.errorhandler(404)

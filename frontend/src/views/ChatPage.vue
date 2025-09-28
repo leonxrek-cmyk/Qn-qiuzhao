@@ -50,6 +50,7 @@
         :character="currentCharacter"
         :timestamp="message.timestamp"
         :character-id="message.characterId || (currentCharacter ? currentCharacter.id : null)"
+        @stop-all-audio="handleStopAllAudio"
       />
 
       <!-- 正在输入提示 -->
@@ -121,6 +122,7 @@ import MessageBubble from '../components/MessageBubble.vue'
 import IntimacyBar from '../components/IntimacyBar.vue'
 import apiService from '../apiService.js'
 import { useAuth } from '../composables/useAuth.js'
+import { convertWebMToWav, needsConversion, getAudioInfo } from '../utils/audioConverter.js'
 
 export default {
   name: 'ChatPage',
@@ -975,30 +977,79 @@ export default {
     // 开始语音录音
     async startVoiceRecording() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        console.log('🎤 开始录音...')
+        
+        // 使用最简单的音频约束
+        const constraints = { audio: true }
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        console.log('✅ 麦克风权限获取成功')
+        
+        // 不指定格式，让浏览器自己选择最佳格式
         this.mediaRecorder = new MediaRecorder(stream)
+        
+        // 获取浏览器实际选择的格式
+        const mimeType = this.mediaRecorder.mimeType
+        console.log('📹 浏览器选择格式:', mimeType)
+        
         this.audioChunks = []
         
         this.mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             this.audioChunks.push(event.data)
+            console.log('📦 收到数据块:', event.data.size, 'bytes')
           }
         }
         
         this.mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' })
-          this.processVoiceInput(audioBlob)
+          const audioBlob = new Blob(this.audioChunks, { type: mimeType })
+          console.log('🎵 录音完成:', audioBlob.size, 'bytes, 格式:', mimeType)
+          
+          if (audioBlob.size === 0) {
+            console.error('❌ 录音数据为空')
+            this.userInput = '录音失败：没有录制到音频数据'
+            setTimeout(() => { this.userInput = '' }, 3000)
+            return
+          }
+          
+          if (audioBlob.size < 1000) {
+            console.warn('⚠️ 录音数据过小')
+            this.userInput = '录音时间过短，请重新录音'
+            setTimeout(() => { this.userInput = '' }, 3000)
+            return
+          }
+          
+          console.log('✅ 录音数据正常，开始处理...')
+          this.processVoiceInput(audioBlob, mimeType)
           
           // 停止所有音频轨道
           stream.getTracks().forEach(track => track.stop())
         }
         
+        this.mediaRecorder.onerror = (event) => {
+          console.error('❌ 录音错误:', event.error)
+          this.userInput = '录音错误：' + event.error
+          this.isVoiceRecording = false
+          setTimeout(() => { this.userInput = '' }, 3000)
+        }
+        
+        // 使用默认设置开始录音，不指定时间间隔
         this.mediaRecorder.start()
         this.isVoiceRecording = true
-        console.log('开始录音')
+        console.log('🔴 开始录音，格式:', mimeType)
       } catch (error) {
         console.error('无法访问麦克风:', error)
-        alert('无法访问麦克风，请检查权限设置')
+        let errorMessage = '无法访问麦克风'
+        
+        if (error.name === 'NotAllowedError') {
+          errorMessage = '麦克风权限被拒绝，请在浏览器设置中允许麦克风访问'
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = '未找到麦克风设备'
+        } else if (error.name === 'NotReadableError') {
+          errorMessage = '麦克风被其他应用占用'
+        }
+        
+        alert(errorMessage)
       }
     },
 
@@ -1011,23 +1062,219 @@ export default {
       }
     },
 
-    // 处理语音输入（目前只是模拟功能）
-    async processVoiceInput(audioBlob) {
+    // 处理语音输入
+    async processVoiceInput(audioBlob, mimeType) {
       try {
-        // 这里应该调用语音识别API，目前只是模拟
-        console.log('处理语音输入，音频大小:', audioBlob.size)
+        console.log('🚀 开始处理语音输入')
+        console.log('📊 原始音频:', { size: audioBlob.size, type: mimeType })
         
-        // 模拟语音识别结果
-        const simulatedText = "这是模拟的语音识别结果"
-        this.userInput = simulatedText
+        // 显示处理状态
+        this.userInput = '正在处理音频...'
         
-        // 可以选择自动发送消息
-        // await this.sendMessage()
+        // 基本检查
+        if (audioBlob.size < 1000) {
+          this.userInput = '录音时间太短，请重新录音'
+          setTimeout(() => { this.userInput = '' }, 3000)
+          return
+        }
+        
+        if (audioBlob.size > 10 * 1024 * 1024) {
+          this.userInput = '录音文件过大，请缩短录音时间'
+          setTimeout(() => { this.userInput = '' }, 3000)
+          return
+        }
+        
+        // 获取音频信息
+        const audioInfo = await getAudioInfo(audioBlob)
+        if (audioInfo) {
+          console.log('🎵 音频详情:', audioInfo)
+        }
+        
+        // 强制转换所有录音为标准WAV格式
+        let processedBlob = audioBlob
+        let finalMimeType = mimeType
+        
+        try {
+          console.log('🔄 开始音频格式标准化...')
+          this.userInput = '正在处理音频格式...'
+          
+          if (needsConversion(mimeType)) {
+            console.log('📹 WebM格式，转换为WAV...')
+            // 转换为16kHz单声道WAV格式
+            processedBlob = await convertWebMToWav(audioBlob, 16000)
+          } else {
+            console.log('📄 已是WAV格式，验证并标准化...')
+            // 即使是WAV格式，也重新处理确保格式标准
+            const audioInfo = await getAudioInfo(audioBlob)
+            if (audioInfo && (audioInfo.sampleRate !== 16000 || audioInfo.channels !== 1)) {
+              console.log('🔧 WAV格式需要标准化...')
+              processedBlob = await convertWebMToWav(audioBlob, 16000)
+            }
+          }
+          
+          finalMimeType = 'audio/wav'
+          
+          console.log('✅ 音频处理完成:', {
+            原始: `${audioBlob.size}bytes, ${mimeType}`,
+            处理后: `${processedBlob.size}bytes, ${finalMimeType}`,
+            转换: processedBlob !== audioBlob ? '是' : '否'
+          })
+          
+        } catch (error) {
+          console.error('❌ 音频处理失败:', error)
+          this.userInput = '音频处理失败，请重新录音'
+          setTimeout(() => { this.userInput = '' }, 3000)
+          return
+        }
+        
+        // 创建FormData用于文件上传
+        const formData = new FormData()
+        
+        // 根据最终的mimeType确定文件扩展名
+        let fileExtension = 'wav' // 默认使用WAV
+        if (finalMimeType.includes('wav')) {
+          fileExtension = 'wav'
+        } else if (finalMimeType.includes('mp4')) {
+          fileExtension = 'mp4'
+        } else if (finalMimeType.includes('mp3')) {
+          fileExtension = 'mp3'
+        } else if (finalMimeType.includes('webm')) {
+          fileExtension = 'webm'
+        }
+        
+        // 创建文件对象
+        const audioFile = new File([processedBlob], `recording.${fileExtension}`, {
+          type: finalMimeType
+        })
+        
+        formData.append('audio', audioFile)
+        
+        console.log('📤 发送识别请求:', {
+          文件名: audioFile.name,
+          大小: audioFile.size,
+          类型: audioFile.type,
+          是否转换: processedBlob !== audioBlob
+        })
+        
+        // 更新状态
+        this.userInput = '正在识别语音...'
+        
+        // 使用文件上传方式调用语音识别API
+        const result = await apiService.voiceRecognition(formData)
+        console.log('语音识别API响应:', result)
+        
+        if (result && result.success && result.text) {
+          // 识别成功，将文字填入输入框
+          const recognizedText = result.text.trim()
+          if (recognizedText) {
+            this.userInput = recognizedText
+            console.log('语音识别成功:', recognizedText)
+            
+            // 可选：自动发送消息（取消注释下面这行）
+            // await this.sendMessage()
+          } else {
+            this.userInput = ''
+            alert('语音识别结果为空，请重新录音')
+          }
+        } else {
+          // 识别失败
+          this.userInput = ''
+          const errorMsg = result?.error || '语音识别失败'
+          const errorCode = result?.error_code
+          console.error('语音识别失败:', errorMsg, '错误码:', errorCode, result)
+          
+          // 根据错误类型和错误码提供更具体的提示
+          let userMessage = '语音识别失败'
+          
+          if (errorCode === 3301) {
+            userMessage = '音频质量过差，请在安静环境下清晰地说话并重新录音'
+          } else if (errorCode === 3308) {
+            userMessage = '音频无效，请确保录音时间足够长（至少1秒）并重新录音'
+          } else if (errorCode === 3312) {
+            userMessage = '音频格式不支持，正在尝试其他方式...'
+            // 格式问题时，显示提示但不弹窗，让用户重试
+            this.userInput = userMessage
+            setTimeout(() => {
+              this.userInput = ''
+            }, 3000)
+            return
+          } else if (errorCode === 3302) {
+            userMessage = 'API认证失败，请联系管理员'
+          } else if (errorCode === 3304) {
+            userMessage = '请求过于频繁，请稍后重试'
+          } else if (errorCode === 3307 || errorCode === 3311) {
+            userMessage = '录音时间过长，请录制较短的语音'
+          } else if (errorMsg.includes('音频质量')) {
+            userMessage = '音频质量不佳，请在安静环境下重新录音'
+          } else if (errorMsg.includes('网络')) {
+            userMessage = '网络连接失败，请检查网络后重试'
+          } else if (errorMsg.includes('超限')) {
+            userMessage = 'API调用次数超限，请稍后重试'
+          } else {
+            userMessage = `语音识别失败: ${errorMsg}`
+          }
+          
+          // 显示错误信息
+          this.userInput = userMessage
+          setTimeout(() => {
+            this.userInput = ''
+          }, 4000)
+        }
         
       } catch (error) {
         console.error('处理语音输入失败:', error)
-        alert('语音处理失败，请重试')
+        this.userInput = ''
+        
+        // 根据错误类型显示不同的提示
+        let errorMessage = '语音处理失败，请重试'
+        
+        if (error.response) {
+          // HTTP错误
+          const status = error.response.status
+          if (status === 400) {
+            errorMessage = '请求参数错误，请重新录音'
+          } else if (status === 401) {
+            errorMessage = 'API认证失败，请联系管理员'
+          } else if (status === 500) {
+            errorMessage = '服务器错误，请稍后重试'
+          } else {
+            errorMessage = `网络错误 (${status})，请重试`
+          }
+        } else if (error.message) {
+          if (error.message.includes('网络')) {
+            errorMessage = '网络连接失败，请检查网络后重试'
+          } else if (error.message.includes('超时')) {
+            errorMessage = '请求超时，请重试'
+          } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = '无法连接到服务器，请检查网络连接'
+          } else {
+            errorMessage = error.message
+          }
+        }
+        
+        alert(errorMessage)
       }
+    },
+
+    // 将Blob转换为Base64
+    blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          // 移除data:audio/wav;base64,前缀，只保留base64数据
+          const base64 = reader.result.split(',')[1]
+          resolve(base64)
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      })
+    },
+
+    // 处理停止所有音频播放
+    handleStopAllAudio() {
+      // 这个方法会被MessageBubble组件调用，用于停止其他正在播放的音频
+      // 由于每个MessageBubble组件都会处理自己的音频停止，这里主要用于协调
+      console.log('停止所有音频播放')
     }
   }
 }
